@@ -1,0 +1,14 @@
+{
+    "cluster": {
+        "name": "jetty-test"
+    },
+    "http": {
+        "enabled": true,
+        "type": "jetty",
+        "jetty": {
+            "request_log": {
+                "enabled": true
+            }
+        }
+    }
+}

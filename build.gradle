@@ -1,0 +1,55 @@
+apply plugin: 'java'
+apply plugin: 'idea'
+
+sourceCompatibility = '1.6'
+targetCompatibility = '1.6'
+version = '0.17.6.0'
+elasticSearchVerstion = '0.17.6'
+jettyVersion = '7.4.5.v20110725'
+
+test {
+	useTestNG()
+}
+
+mavenRepoUrl = System.getenv("REPO_URL");
+if (mavenRepoUrl == null) {
+    mavenRepoUrl = "http://oss.sonatype.org/service/local/staging/deploy/maven2/"
+}
+mavenSnapshotRepoUrl = System.getenv("SNAPSHOT_REPO_URL");
+if (mavenSnapshotRepoUrl == null) {
+    mavenSnapshotRepoUrl = "http://oss.sonatype.org/content/repositories/snapshots"
+}
+
+configurations {
+	dist
+}
+
+repositories {
+    mavenCentral()
+    mavenRepo urls: 'https://repository.jboss.org/nexus/content/groups/public'
+	mavenRepo urls: 'http://repository.codehaus.org/'
+	mavenRepo urls: 'http://elasticsearch.googlecode.com/svn/maven'
+	mavenRepo urls: 'http://oss.sonatype.org/content/repositories/releases'
+	mavenRepo urls: 'http://oss.sonatype.org/content/repositories/snapshots'
+	mavenRepo urls: 'http://download.java.net/maven/2/'
+}
+
+dependencies {
+    compile group: 'org.elasticsearch', name: 'elasticsearch', version: elasticSearchVerstion
+    compile group: 'org.eclipse.jetty', name: 'jetty-server', version: jettyVersion
+
+    testCompile group: 'org.easymock', name: 'easymock', version: '3.0'
+    testCompile group: 'org.testng', name: 'testng', version: '6.2'
+
+    dist group: 'org.eclipse.jetty', name: 'jetty-server', version: jettyVersion
+}
+
+ideaProject {
+    javaVersion = '1.6'
+    version = '1.6'
+}
+
+task dist(type: Zip) {
+    from jar.outputs.files
+    from configurations.dist
+}

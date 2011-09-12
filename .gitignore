@@ -1,0 +1,10 @@
+.DS_Store
+.gradle/
+elasticsearch-jetty.iml
+elasticsearch-jetty.iws
+elasticsearch-jetty.ipr
+build/
+data/
+logs/
+out/
+work/
