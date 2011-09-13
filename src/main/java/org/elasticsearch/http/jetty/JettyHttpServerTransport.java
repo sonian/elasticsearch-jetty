@@ -5,6 +5,7 @@ import org.eclipse.jetty.server.NCSARequestLog;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.HandlerCollection;
 import org.eclipse.jetty.server.handler.RequestLogHandler;
+import org.eclipse.jetty.util.log.Log;
 import org.elasticsearch.ElasticSearchException;
 import org.elasticsearch.cluster.ClusterName;
 import org.elasticsearch.common.component.AbstractLifecycleComponent;
@@ -55,6 +56,8 @@ public class JettyHttpServerTransport extends AbstractLifecycleComponent<HttpSer
 
     private final String requestLogTimeZone;
 
+    private final ESLoggerLog esLoggerLog;
+
     private volatile BoundTransportAddress boundAddress;
 
     private volatile InetSocketAddress jettyBoundAddress;
@@ -77,7 +80,7 @@ public class JettyHttpServerTransport extends AbstractLifecycleComponent<HttpSer
         this.requestLogRetainDays = componentSettings.getAsInt("request_log.retain_days", 90);
         this.requestLogExtended = componentSettings.getAsBoolean("request_log.extended", false);
         this.requestLogTimeZone = componentSettings.get("request_log.timezone", "GMT");
-
+        this.esLoggerLog = new ESLoggerLog(settings);
     }
 
     @Override
@@ -90,12 +93,10 @@ public class JettyHttpServerTransport extends AbstractLifecycleComponent<HttpSer
         }
         final InetAddress hostAddress = hostAddressX;
 
-
         PortsRange portsRange = new PortsRange(port);
         final AtomicReference<Exception> lastException = new AtomicReference<Exception>();
 
-        //Set ESLogger as a logger for Jetty
-        System.setProperty("org.eclipse.jetty.util.log.class", "org.elasticsearch.http.jetty.ESLoggerLog");
+        Log.setLog(esLoggerLog);
 
         portsRange.iterate(new PortsRange.PortCallback() {
             @Override public boolean onPortNumber(int portNumber) {

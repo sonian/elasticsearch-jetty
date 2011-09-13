@@ -4,6 +4,7 @@ package org.elasticsearch.http.jetty;
 import org.eclipse.jetty.util.log.Logger;
 import org.elasticsearch.common.logging.ESLogger;
 import org.elasticsearch.common.logging.Loggers;
+import org.elasticsearch.common.settings.Settings;
 
 /**
  * @author imotov
@@ -12,12 +13,15 @@ public class ESLoggerLog implements Logger {
 
     public final ESLogger logger;
 
-    public ESLoggerLog(String name) {
-        logger =  Loggers.getLogger(name);
+    public final Settings settings;
+
+    public ESLoggerLog(String name, Settings settings) {
+        this.logger =  Loggers.getLogger(name, settings);
+        this.settings = settings;
     }
 
-    public ESLoggerLog() {
-        this("org.eclipse.jetty");
+    public ESLoggerLog(Settings settings) {
+        this("org.eclipse.jetty", settings);
     }
 
     @Override
@@ -82,7 +86,7 @@ public class ESLoggerLog implements Logger {
 
     @Override
     public Logger getLogger(String name) {
-        return new ESLoggerLog(name);
+        return new ESLoggerLog(name, settings);
     }
 
     @Override
