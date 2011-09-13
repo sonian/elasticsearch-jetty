@@ -44,10 +44,10 @@ dependencies {
     dist group: 'org.eclipse.jetty', name: 'jetty-server', version: jettyVersion
 }
 
-ideaProject {
-    javaVersion = '1.6'
-    version = '1.6'
-}
+//ideaProject {
+//    javaVersion = '1.6'
+//    version = '1.6'
+//}
 
 task dist(type: Zip) {
     from jar.outputs.files

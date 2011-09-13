@@ -1,7 +1,6 @@
 package org.elasticsearch.http.jetty;
 
 import org.elasticsearch.http.HttpChannel;
-import org.elasticsearch.rest.RestChannel;
 import org.elasticsearch.rest.RestRequest;
 import org.elasticsearch.rest.RestResponse;
 
@@ -32,6 +31,10 @@ public class JettyHttpServerRestChannel implements HttpChannel {
         latch.await();
     }
 
+    public IOException sendFailure() {
+        return sendFailure;
+    }
+
     @Override
     public void sendResponse(RestResponse response) {
         resp.setContentType(response.contentType());
@@ -57,7 +60,7 @@ public class JettyHttpServerRestChannel implements HttpChannel {
         } catch (IOException e) {
             sendFailure = e;
         } finally {
-                latch.countDown();
+            latch.countDown();
         }
      }
 }

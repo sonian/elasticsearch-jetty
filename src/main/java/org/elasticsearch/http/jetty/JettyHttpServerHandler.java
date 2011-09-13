@@ -31,5 +31,8 @@ public class JettyHttpServerHandler extends AbstractHandler {
         } catch (Exception e) {
             throw new IOException("failed to dispatch request", e);
         }
+        if (restChannel.sendFailure() != null) {
+            throw restChannel.sendFailure();
+        }
     }
 }
