@@ -7,6 +7,7 @@ import org.eclipse.jetty.server.handler.HandlerCollection;
 import org.eclipse.jetty.server.handler.RequestLogHandler;
 import org.eclipse.jetty.util.log.Log;
 import org.elasticsearch.ElasticSearchException;
+import org.elasticsearch.ElasticSearchParseException;
 import org.elasticsearch.cluster.ClusterName;
 import org.elasticsearch.common.component.AbstractLifecycleComponent;
 import org.elasticsearch.common.inject.Inject;
@@ -15,6 +16,7 @@ import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.BoundTransportAddress;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.common.transport.PortsRange;
+import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.env.Environment;
 import org.elasticsearch.http.BindHttpException;
 import org.elasticsearch.http.HttpServerAdapter;
@@ -33,6 +35,8 @@ import java.util.concurrent.atomic.AtomicReference;
  * @author imotov
  */
 public class JettyHttpServerTransport extends AbstractLifecycleComponent<HttpServerTransport> implements HttpServerTransport {
+
+    private static final String SLEEP_PARAM = "sleep";
 
     private final NetworkService networkService;
 
@@ -54,6 +58,8 @@ public class JettyHttpServerTransport extends AbstractLifecycleComponent<HttpSer
 
     private final boolean requestLogExtended;
 
+    private final boolean emulateTimeOut;
+
     private final String requestLogTimeZone;
 
     private final ESLoggerLog esLoggerLog;
@@ -67,7 +73,8 @@ public class JettyHttpServerTransport extends AbstractLifecycleComponent<HttpSer
     private volatile HttpServerAdapter httpServerAdapter;
 
 
-    @Inject public JettyHttpServerTransport(Settings settings, Environment environment, ClusterName clusterName, NetworkService networkService) {
+    @Inject
+    public JettyHttpServerTransport(Settings settings, Environment environment, ClusterName clusterName, NetworkService networkService) {
         super(settings);
         this.networkService = networkService;
         this.environment = environment;
@@ -80,6 +87,7 @@ public class JettyHttpServerTransport extends AbstractLifecycleComponent<HttpSer
         this.requestLogRetainDays = componentSettings.getAsInt("request_log.retain_days", 90);
         this.requestLogExtended = componentSettings.getAsBoolean("request_log.extended", false);
         this.requestLogTimeZone = componentSettings.get("request_log.timezone", "GMT");
+        this.emulateTimeOut = componentSettings.getAsBoolean("emulate_timeout.enabled", false);
         this.esLoggerLog = new ESLoggerLog(settings);
     }
 
@@ -99,7 +107,8 @@ public class JettyHttpServerTransport extends AbstractLifecycleComponent<HttpSer
         Log.setLog(esLoggerLog);
 
         portsRange.iterate(new PortsRange.PortCallback() {
-            @Override public boolean onPortNumber(int portNumber) {
+            @Override
+            public boolean onPortNumber(int portNumber) {
                 jettyBoundAddress = new InetSocketAddress(hostAddress, portNumber);
                 Server server = new Server(jettyBoundAddress);
                 server.setHandler(createJettyHandler());
@@ -186,6 +195,26 @@ public class JettyHttpServerTransport extends AbstractLifecycleComponent<HttpSer
     }
 
     void dispatchRequest(JettyHttpServerRestRequest request, JettyHttpServerRestChannel channel) {
+        if (emulateTimeOut) {
+            if (request.hasParam(SLEEP_PARAM)) {
+                long sleep = 0;
+                try {
+                    TimeValue timeValue = TimeValue.parseTimeValue(request.param(SLEEP_PARAM), null);
+                    if (timeValue != null) {
+                        sleep = timeValue.millis();
+                    }
+                } catch (ElasticSearchParseException ex) {
+                    logger.error("Invalid sleep parameter [{}]", request.param(SLEEP_PARAM));
+                }
+                if (sleep > 0) {
+                    try {
+                        Thread.sleep(sleep);
+                    } catch (InterruptedException e) {
+                        return;
+                    }
+                }
+            }
+        }
         httpServerAdapter.dispatchRequest(request, channel);
     }
 }
