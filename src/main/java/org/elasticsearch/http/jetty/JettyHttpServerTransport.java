@@ -155,6 +155,7 @@ public class JettyHttpServerTransport extends AbstractLifecycleComponent<HttpSer
             NCSARequestLog requestLog = new NCSARequestLog(filename);
             requestLog.setRetainDays(requestLogRetainDays);
             requestLog.setAppend(true);
+            requestLog.setLogLatency(true);
             requestLog.setExtended(requestLogExtended);
             requestLog.setLogTimeZone(requestLogTimeZone);
             requestLogHandler.setRequestLog(requestLog);
