@@ -39,6 +39,11 @@ public class JettyHttpServerRestChannel implements HttpChannel {
     public void sendResponse(RestResponse response) {
         resp.setContentType(response.contentType());
         resp.addHeader("Access-Control-Allow-Origin", "*");
+        if (response.status() != null) {
+            resp.setStatus(response.status().getStatus());
+        } else {
+            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        }
         if (restRequest.method() == RestRequest.Method.OPTIONS) {
             // also add more access control parameters
             resp.addHeader("Access-Control-Max-Age", "1728000");
