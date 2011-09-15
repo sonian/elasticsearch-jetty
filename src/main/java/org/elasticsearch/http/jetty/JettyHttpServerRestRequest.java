@@ -1,10 +1,8 @@
 package org.elasticsearch.http.jetty;
 
-import org.eclipse.jetty.server.Request;
 import org.elasticsearch.common.Unicode;
 import org.elasticsearch.common.io.Streams;
 import org.elasticsearch.http.HttpRequest;
-import org.elasticsearch.rest.RestRequest;
 import org.elasticsearch.rest.support.AbstractRestRequest;
 import org.elasticsearch.rest.support.RestUtils;
 
@@ -36,7 +34,7 @@ public class JettyHttpServerRestRequest extends AbstractRestRequest implements H
         }
 
         content = Streams.copyToByteArray(request.getInputStream());
-
+        request.setAttribute("org.elasticsearch.http.jetty.request-content", content);
     }
 
     @Override public Method method() {

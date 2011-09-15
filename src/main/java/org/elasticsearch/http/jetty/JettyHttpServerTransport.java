@@ -1,14 +1,12 @@
 package org.elasticsearch.http.jetty;
 
 import org.eclipse.jetty.server.Handler;
-import org.eclipse.jetty.server.NCSARequestLog;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.HandlerCollection;
 import org.eclipse.jetty.server.handler.RequestLogHandler;
 import org.eclipse.jetty.util.log.Log;
 import org.elasticsearch.ElasticSearchException;
 import org.elasticsearch.ElasticSearchParseException;
-import org.elasticsearch.cluster.ClusterName;
 import org.elasticsearch.common.component.AbstractLifecycleComponent;
 import org.elasticsearch.common.inject.Inject;
 import org.elasticsearch.common.network.NetworkService;
@@ -17,14 +15,14 @@ import org.elasticsearch.common.transport.BoundTransportAddress;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.common.transport.PortsRange;
 import org.elasticsearch.common.unit.TimeValue;
-import org.elasticsearch.env.Environment;
 import org.elasticsearch.http.BindHttpException;
 import org.elasticsearch.http.HttpServerAdapter;
 import org.elasticsearch.http.HttpServerTransport;
 import org.elasticsearch.http.HttpStats;
+import org.elasticsearch.http.jetty.logging.RequestLogger;
+import org.elasticsearch.http.jetty.logging.RequestLoggerWrapper;
 import org.elasticsearch.transport.BindTransportException;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.BindException;
 import java.net.InetAddress;
@@ -46,21 +44,11 @@ public class JettyHttpServerTransport extends AbstractLifecycleComponent<HttpSer
 
     private final String publishHost;
 
-    private final Environment environment;
-
-    private final ClusterName clusterName;
+    private final RequestLogger requestLogger;
 
     private final boolean requestLogEnabled;
 
-    private final String requestLogFilename;
-
-    private final int requestLogRetainDays;
-
-    private final boolean requestLogExtended;
-
     private final boolean emulateTimeOut;
-
-    private final String requestLogTimeZone;
 
     private final ESLoggerLog esLoggerLog;
 
@@ -74,19 +62,14 @@ public class JettyHttpServerTransport extends AbstractLifecycleComponent<HttpSer
 
 
     @Inject
-    public JettyHttpServerTransport(Settings settings, Environment environment, ClusterName clusterName, NetworkService networkService) {
+    public JettyHttpServerTransport(Settings settings, NetworkService networkService, RequestLogger requestLogger) {
         super(settings);
         this.networkService = networkService;
-        this.environment = environment;
-        this.clusterName = clusterName;
+        this.requestLogger = requestLogger;
         this.port = componentSettings.get("port", settings.get("http.port", "9200-9300"));
         this.bindHost = componentSettings.get("bind_host", settings.get("http.bind_host", settings.get("http.host")));
         this.publishHost = componentSettings.get("publish_host", settings.get("http.publish_host", settings.get("http.host")));
         this.requestLogEnabled = componentSettings.getAsBoolean("request_log.enabled", false);
-        this.requestLogFilename = componentSettings.get("request_log.filename", "request.log.yyyy_mm_dd");
-        this.requestLogRetainDays = componentSettings.getAsInt("request_log.retain_days", 90);
-        this.requestLogExtended = componentSettings.getAsBoolean("request_log.extended", false);
-        this.requestLogTimeZone = componentSettings.get("request_log.timezone", "GMT");
         this.emulateTimeOut = componentSettings.getAsBoolean("emulate_timeout.enabled", false);
         this.esLoggerLog = new ESLoggerLog(settings);
     }
@@ -146,19 +129,8 @@ public class JettyHttpServerTransport extends AbstractLifecycleComponent<HttpSer
         handlers.addHandler(handler);
 
         if (requestLogEnabled) {
-            File logs = environment.logsFile();
-            if (!logs.exists()) {
-                logs.mkdirs();
-            }
             RequestLogHandler requestLogHandler = new RequestLogHandler();
-            String filename = new File(environment.logsFile(), clusterName.value() + "." + requestLogFilename).getAbsolutePath();
-            NCSARequestLog requestLog = new NCSARequestLog(filename);
-            requestLog.setRetainDays(requestLogRetainDays);
-            requestLog.setAppend(true);
-            requestLog.setLogLatency(true);
-            requestLog.setExtended(requestLogExtended);
-            requestLog.setLogTimeZone(requestLogTimeZone);
-            requestLogHandler.setRequestLog(requestLog);
+            requestLogHandler.setRequestLog(new RequestLoggerWrapper(requestLogger));
             handlers.addHandler(requestLogHandler);
         }
         return handlers;

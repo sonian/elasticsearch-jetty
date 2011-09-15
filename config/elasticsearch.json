@@ -8,6 +8,9 @@
         "jetty": {
             "request_log": {
                 "enabled": true
+            },
+            "emulate_timeout": {
+                "enabled": true
             }
         }
     }
