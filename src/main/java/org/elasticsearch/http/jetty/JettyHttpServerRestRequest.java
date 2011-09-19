@@ -16,6 +16,8 @@ import java.util.Map;
  */
 public class JettyHttpServerRestRequest extends AbstractRestRequest implements HttpRequest {
 
+    public static final String REQUEST_CONTENT_ATTRIBUTE = "org.elasticsearch.http.jetty.request-content";
+
     private final HttpServletRequest request;
 
     private final Method method;
@@ -34,7 +36,7 @@ public class JettyHttpServerRestRequest extends AbstractRestRequest implements H
         }
 
         content = Streams.copyToByteArray(request.getInputStream());
-        request.setAttribute("org.elasticsearch.http.jetty.request-content", content);
+        request.setAttribute(REQUEST_CONTENT_ATTRIBUTE, content);
     }
 
     @Override public Method method() {

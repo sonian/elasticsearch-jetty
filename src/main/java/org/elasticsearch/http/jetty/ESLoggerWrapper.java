@@ -2,6 +2,8 @@ package org.elasticsearch.http.jetty;
 
 
 import org.eclipse.jetty.util.log.Logger;
+import org.elasticsearch.common.component.AbstractComponent;
+import org.elasticsearch.common.inject.Inject;
 import org.elasticsearch.common.logging.ESLogger;
 import org.elasticsearch.common.logging.Loggers;
 import org.elasticsearch.common.settings.Settings;
@@ -9,24 +11,26 @@ import org.elasticsearch.common.settings.Settings;
 /**
  * @author imotov
  */
-public class ESLoggerLog implements Logger {
+public class ESLoggerWrapper extends AbstractComponent implements Logger  {
 
     public final ESLogger logger;
 
     public final Settings settings;
 
-    public ESLoggerLog(String name, Settings settings) {
-        this.logger =  Loggers.getLogger(name, settings);
-        this.settings = settings;
-    }
-
-    public ESLoggerLog(Settings settings) {
+    @Inject
+    public ESLoggerWrapper(Settings settings) {
         this("org.eclipse.jetty", settings);
     }
 
     @Override
     public String getName() {
         return logger.getName();
+    }
+
+    public ESLoggerWrapper(String name, Settings settings) {
+        super(settings);
+        this.logger =  Loggers.getLogger(name, settings);
+        this.settings = settings;
     }
 
     @Override
@@ -86,7 +90,7 @@ public class ESLoggerLog implements Logger {
 
     @Override
     public Logger getLogger(String name) {
-        return new ESLoggerLog(name, settings);
+        return new ESLoggerWrapper(name, settings);
     }
 
     @Override

@@ -1,7 +1,10 @@
-package org.elasticsearch.http.jetty;
+package org.elasticsearch.http.jetty.handler.adapter;
 
 import org.eclipse.jetty.server.Request;
-import org.eclipse.jetty.server.handler.AbstractHandler;
+import org.elasticsearch.http.HttpServerAdapter;
+import org.elasticsearch.http.jetty.JettyHttpServerRestChannel;
+import org.elasticsearch.http.jetty.JettyHttpServerRestRequest;
+import org.elasticsearch.http.jetty.handler.AbstractJettyHttpServerTransportHandler;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -11,20 +14,15 @@ import java.io.IOException;
 /**
  * @author imotov
  */
-public class JettyHttpServerHandler extends AbstractHandler {
-
-    private final JettyHttpServerTransport serverTransport;
-
-    public JettyHttpServerHandler(JettyHttpServerTransport serverTransport) {
-        this.serverTransport = serverTransport;
-    }
+public class HttpServerAdapterHandler extends AbstractJettyHttpServerTransportHandler {
 
     @Override
     public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+        HttpServerAdapter adapter = getTransport().httpServerAdapter();
         JettyHttpServerRestRequest restRequest = new JettyHttpServerRestRequest(request);
         JettyHttpServerRestChannel restChannel = new JettyHttpServerRestChannel(restRequest, response);
         try {
-            serverTransport.dispatchRequest(restRequest, restChannel);
+            adapter.dispatchRequest(restRequest, restChannel);
             restChannel.await();
         } catch (InterruptedException e) {
             throw new ServletException("failed to dispatch request", e);
@@ -35,4 +33,5 @@ public class JettyHttpServerHandler extends AbstractHandler {
             throw restChannel.sendFailure();
         }
     }
+
 }

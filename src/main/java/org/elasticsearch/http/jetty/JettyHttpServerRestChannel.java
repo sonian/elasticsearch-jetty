@@ -21,7 +21,7 @@ public class JettyHttpServerRestChannel implements HttpChannel {
 
     private final CountDownLatch latch;
 
-    JettyHttpServerRestChannel(RestRequest restRequest, HttpServletResponse resp) {
+    public JettyHttpServerRestChannel(RestRequest restRequest, HttpServletResponse resp) {
         this.restRequest = restRequest;
         this.resp = resp;
         this.latch = new CountDownLatch(1);
