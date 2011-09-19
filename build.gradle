@@ -3,8 +3,8 @@ apply plugin: 'idea'
 
 sourceCompatibility = '1.6'
 targetCompatibility = '1.6'
-version = '0.17.1'
-elasticSearchVerstion = '0.17.6'
+version = '0.17.2'
+elasticSearchVerstion = '0.17.7'
 jettyVersion = '7.4.5.v20110725'
 
 test {
