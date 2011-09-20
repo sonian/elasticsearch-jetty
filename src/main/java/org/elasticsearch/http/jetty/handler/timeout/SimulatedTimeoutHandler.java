@@ -5,11 +5,15 @@ import org.elasticsearch.ElasticSearchParseException;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.http.jetty.JettyHttpServerTransport;
 import org.elasticsearch.http.jetty.handler.AbstractJettyHttpServerTransportHandler;
+import org.elasticsearch.rest.support.RestUtils;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Map;
+
+import static org.elasticsearch.common.collect.Maps.newHashMap;
 
 /**
  * @author imotov
@@ -22,22 +26,26 @@ public class SimulatedTimeoutHandler extends AbstractJettyHttpServerTransportHan
 
     @Override
     public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-        if(emulateTimeout) {
-            if (request.getParameter(SLEEP_PARAM) != null) {
+        if(emulateTimeout && baseRequest.getQueryString() != null) {
+            Map<String, String> params = newHashMap();
+            // We have to decode query string ourselves because request.getParameter method will read
+            // request content and make input stream unavailable to other handlers.
+            RestUtils.decodeQueryString(baseRequest.getQueryString(), 0, params);
+            if (params.containsKey(SLEEP_PARAM)) {
                 long sleep = 0;
                 try {
-                    TimeValue timeValue = TimeValue.parseTimeValue(request.getParameter(SLEEP_PARAM), null);
+                    TimeValue timeValue = TimeValue.parseTimeValue(params.get(SLEEP_PARAM), null);
                     if (timeValue != null) {
                         sleep = timeValue.millis();
                     }
                 } catch (ElasticSearchParseException ex) {
-                    logger.error("Invalid sleep parameter [{}]", request.getParameter(SLEEP_PARAM));
+                    logger.error("Invalid sleep parameter [{}]", params.get(SLEEP_PARAM));
                 }
                 if (sleep > 0) {
                     try {
                         Thread.sleep(sleep);
                     } catch (InterruptedException e) {
-                        return;
+                        // Ignore
                     }
                 }
             }
