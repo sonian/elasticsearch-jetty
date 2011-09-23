@@ -1,13 +1,13 @@
 package org.elasticsearch.http.jetty;
 
+import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.nio.SelectChannelConnector;
 import org.eclipse.jetty.util.log.Log;
 import org.eclipse.jetty.xml.XmlConfiguration;
 import org.elasticsearch.ElasticSearchException;
 import org.elasticsearch.common.component.AbstractLifecycleComponent;
 import org.elasticsearch.common.inject.Inject;
-import org.elasticsearch.common.logging.ESLogger;
-import org.elasticsearch.common.logging.Loggers;
 import org.elasticsearch.common.network.NetworkService;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.BoundTransportAddress;
@@ -42,6 +42,8 @@ public class JettyHttpServerTransport extends AbstractLifecycleComponent<HttpSer
 
     private final String publishHost;
 
+    private final String jettyConfig;
+
     private final Environment environment;
 
     private final ESLoggerWrapper loggerWrapper;
@@ -63,6 +65,7 @@ public class JettyHttpServerTransport extends AbstractLifecycleComponent<HttpSer
         this.port = componentSettings.get("port", settings.get("http.port", "9200-9300"));
         this.bindHost = componentSettings.get("bind_host", settings.get("http.bind_host", settings.get("http.host")));
         this.publishHost = componentSettings.get("publish_host", settings.get("http.publish_host", settings.get("http.host")));
+        this.jettyConfig = componentSettings.get("config", "jetty.xml");
         this.loggerWrapper = loggerWrapper;
     }
 
@@ -85,12 +88,18 @@ public class JettyHttpServerTransport extends AbstractLifecycleComponent<HttpSer
             @Override
             public boolean onPortNumber(int portNumber) {
                 jettyBoundAddress = new InetSocketAddress(hostAddress, portNumber);
-                Server server = new Server(jettyBoundAddress);
-                server.setAttribute(TRANSPORT_ATTRIBUTE, JettyHttpServerTransport.this);
                 try {
-                    URL config = environment.resolveConfig("jetty-web.xml");
+                    URL config = environment.resolveConfig(jettyConfig);
                     XmlConfiguration xmlConfiguration = new XmlConfiguration(config);
-                    xmlConfiguration.configure(server);
+                    Server server = (Server) xmlConfiguration.configure();
+
+                    server.setAttribute(TRANSPORT_ATTRIBUTE, JettyHttpServerTransport.this);
+
+                    Connector connector=new SelectChannelConnector();
+                    connector.setHost(jettyBoundAddress.getHostName());
+                    connector.setPort(jettyBoundAddress.getPort());
+                    server.addConnector(connector);
+
                     server.start();
                     jettyServer = server;
                     lastException.set(null);
@@ -98,6 +107,7 @@ public class JettyHttpServerTransport extends AbstractLifecycleComponent<HttpSer
                     lastException.set(e);
                     return false;
                 } catch (Exception e) {
+                    logger.error("Jetty Startup Failed ", e);
                     lastException.set(e);
                     return true;
                 }

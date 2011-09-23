@@ -7,12 +7,9 @@ import org.elasticsearch.common.logging.Loggers;
 import org.elasticsearch.common.network.NetworkUtils;
 import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.common.transport.TransportAddress;
 import org.elasticsearch.http.HttpServerTransport;
 import org.elasticsearch.node.Node;
-import org.elasticsearch.node.NodeBuilder;
 import org.elasticsearch.node.internal.InternalNode;
-import sun.rmi.transport.Transport;
 
 import java.util.Map;
 import java.util.Set;
@@ -115,8 +112,13 @@ public class AbstractJettyHttpServerTests {
 
     }
 
+    public HttpClient httpClient(String id, String username, String password) {
+        return new HttpClient(getHttpServerTransport(id).boundAddress().publishAddress(), username, password);
+
+    }
+
     public void closeAllNodes() {
-        for(TransportClient client : transportClients) {
+        for (TransportClient client : transportClients) {
             client.close();
         }
         transportClients.clear();
@@ -131,7 +133,7 @@ public class AbstractJettyHttpServerTests {
     }
 
     public HttpServerTransport getHttpServerTransport(String id) {
-        return ((InternalNode)node(id)).injector().getInstance(HttpServerTransport.class);
+        return ((InternalNode) node(id)).injector().getInstance(HttpServerTransport.class);
     }
 
 }

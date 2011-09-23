@@ -38,9 +38,11 @@ dependencies {
     compile group: 'org.elasticsearch', name: 'elasticsearch', version: elasticSearchVerstion
     compile group: 'org.eclipse.jetty', name: 'jetty-server', version: jettyVersion
     compile group: 'org.eclipse.jetty', name: 'jetty-xml', version: jettyVersion
+    compile group: 'org.eclipse.jetty', name: 'jetty-security', version: jettyVersion
 
     dist group: 'org.eclipse.jetty', name: 'jetty-server', version: jettyVersion
     dist group: 'org.eclipse.jetty', name: 'jetty-xml', version: jettyVersion
+    dist group: 'org.eclipse.jetty', name: 'jetty-security', version: jettyVersion
 
     testCompile group: 'org.easymock', name: 'easymock', version: '3.0'
     testCompile group: 'org.testng', name: 'testng', version: '6.2'

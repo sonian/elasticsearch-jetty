@@ -4,6 +4,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.elasticsearch.ElasticSearchException;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.common.transport.TransportAddress;
+import sun.misc.BASE64Encoder;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,12 +19,25 @@ public class HttpClient {
 
     private final URL baseUrl;
 
+    private final String encodedAuthorization;
+
     public HttpClient(TransportAddress transportAddress) {
-        InetSocketAddress address = ((InetSocketTransportAddress)transportAddress).address();
+        this(transportAddress, null, null);
+    }
+
+    public HttpClient(TransportAddress transportAddress, String username, String password) {
+        InetSocketAddress address = ((InetSocketTransportAddress) transportAddress).address();
         try {
             baseUrl = new URL("http", address.getHostName(), address.getPort(), "/");
         } catch (MalformedURLException e) {
             throw new ElasticSearchException("", e);
+        }
+        if (username != null) {
+            BASE64Encoder enc = new sun.misc.BASE64Encoder();
+            String userPassword = username + ":" + password;
+            encodedAuthorization = enc.encode(userPassword.getBytes());
+        } else {
+            encodedAuthorization = null;
         }
     }
 
@@ -31,6 +45,7 @@ public class HttpClient {
         return request("GET", path, null);
 
     }
+
     public Map<String, Object> request(String method, String path) {
         return request(method, path, null);
     }
@@ -44,19 +59,25 @@ public class HttpClient {
         } catch (MalformedURLException e) {
             throw new ElasticSearchException("Cannot parse " + path, e);
         }
+
         HttpURLConnection urlConnection;
         try {
-            urlConnection =  (HttpURLConnection)url.openConnection();
+            urlConnection = (HttpURLConnection) url.openConnection();
             urlConnection.setRequestMethod(method);
-            if(data != null) {
+            if (data != null) {
                 urlConnection.setDoOutput(true);
             }
+            if (encodedAuthorization != null) {
+                urlConnection.setRequestProperty("Authorization", "Basic " +
+                        encodedAuthorization);
+            }
+
             urlConnection.connect();
         } catch (IOException e) {
             throw new ElasticSearchException("", e);
         }
 
-        if(data != null) {
+        if (data != null) {
             OutputStream outputStream = null;
             try {
                 outputStream = urlConnection.getOutputStream();
@@ -64,7 +85,7 @@ public class HttpClient {
             } catch (IOException e) {
                 throw new ElasticSearchException("", e);
             } finally {
-                if(outputStream != null) {
+                if (outputStream != null) {
                     try {
                         outputStream.close();
                     } catch (IOException e) {
@@ -74,11 +95,13 @@ public class HttpClient {
             }
         }
 
+        int errorCode = -1;
         try {
+            errorCode = urlConnection.getResponseCode();
             InputStream inputStream = urlConnection.getInputStream();
             return mapper.readValue(inputStream, Map.class);
         } catch (IOException e) {
-            throw new ElasticSearchException("", e);
+            throw new ElasticSearchException("HTTP " + errorCode, e);
         } finally {
             urlConnection.disconnect();
         }
