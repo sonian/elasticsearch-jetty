@@ -4,14 +4,14 @@
     },
     "http": {
         "enabled": true,
-        "type": "jetty",
-        "jetty": {
-            "request_log": {
-                "enabled": true
-            },
-            "emulate_timeout": {
-                "enabled": true
-            }
+        "type": "com.sonian.elasticsearch.http.jetty.JettyHttpServerTransportModule"
+    },
+    "sonian.elasticsearch.http.jetty": {
+        "request_log": {
+            "enabled": true
+        },
+        "emulate_timeout": {
+            "enabled": true
         }
     }
 }
