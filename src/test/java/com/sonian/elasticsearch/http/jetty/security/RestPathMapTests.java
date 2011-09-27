@@ -9,7 +9,7 @@ import static org.hamcrest.Matchers.nullValue;
 /**
  * @author imotov
  */
-public class RestPathMapTest {
+public class RestPathMapTests {
 
     @Test
     public void testRestPathMap() {

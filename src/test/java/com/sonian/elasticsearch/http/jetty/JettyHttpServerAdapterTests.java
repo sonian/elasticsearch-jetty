@@ -15,7 +15,7 @@ import java.util.Map;
 /**
  * @author imotov
  */
-public class JettyHttpServerAdapterTest extends AbstractJettyHttpServerTests {
+public class JettyHttpServerAdapterTests extends AbstractJettyHttpServerTests {
 
     @BeforeMethod
     public void startNodes() {
@@ -50,14 +50,14 @@ public class JettyHttpServerAdapterTest extends AbstractJettyHttpServerTests {
         ).map();
         // Create Index
 
-        Map<String, Object> response = httpClient("server1", "test", "test").request("PUT", "testidx", settings);
+        Map<String, Object> response = httpClient("server1", "user", "Passw0rd").request("PUT", "testidx", settings);
         assertThat((Boolean) response.get("ok"), equalTo(true));
         client("server1").admin().cluster().prepareHealth().setWaitForGreenStatus().execute().actionGet();
 
         Map<String, Object> data = newHashMap();
         data.put("id", "1");
         data.put("message", "test");
-        response = httpClient("server1", "test", "test").request("PUT", "testidx/msg/1?refresh=true", data);
+        response = httpClient("server1", "user", "Passw0rd").request("PUT", "testidx/msg/1?refresh=true", data);
         assertThat((Boolean) response.get("ok"), equalTo(true));
 
         response = httpClient("server1").request("GET", "testidx/msg/_search?q=*:*");
@@ -83,14 +83,14 @@ public class JettyHttpServerAdapterTest extends AbstractJettyHttpServerTests {
             assertThat(ex.getMessage(), equalTo("HTTP 401"));
         }
 
-        Map<String, Object> response = httpClient("server1", "test", "test").request("PUT", "testidx", settings);
+        Map<String, Object> response = httpClient("server1", "user", "Passw0rd").request("PUT", "testidx", settings);
         assertThat((Boolean) response.get("ok"), equalTo(true));
         client("server1").admin().cluster().prepareHealth().setWaitForGreenStatus().execute().actionGet();
 
         Map<String, Object> data = newHashMap();
         data.put("id", "1");
         data.put("message", "test");
-        response = httpClient("server1", "test", "test").request("PUT", "testidx/msg/1?refresh=true", data);
+        response = httpClient("server1", "user", "Passw0rd").request("PUT", "testidx/msg/1?refresh=true", data);
         assertThat((Boolean) response.get("ok"), equalTo(true));
 
         try {

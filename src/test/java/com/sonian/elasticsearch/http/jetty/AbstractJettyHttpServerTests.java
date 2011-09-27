@@ -35,7 +35,7 @@ public class AbstractJettyHttpServerTests {
     private Settings defaultSettings = ImmutableSettings
             .settingsBuilder()
             .put("cluster.name", "test-cluster-" + NetworkUtils.getLocalAddress().getHostName())
-            .put("http.type", "jetty")
+            .put("http.type", JettyHttpServerTransportModule.class.getName())
             .build();
 
     public void putDefaultSettings(Settings.Builder settings) {

@@ -189,7 +189,7 @@ public class RestConstraintSecurityHandler extends SecurityHandler implements Co
         StringTokenizer tok = new StringTokenizer(pathSpec, PATH_SPEC_SEPARATORS);
 
         while (tok.hasMoreTokens()) {
-            String spec = tok.nextToken();
+            String spec = tok.nextToken().trim();
 
             Map<String, RoleInfo> mappings = constraintMap.get(spec);
             if (mappings == null) {
