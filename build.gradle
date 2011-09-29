@@ -1,3 +1,5 @@
+import java.text.SimpleDateFormat
+
 apply plugin: 'java'
 apply plugin: 'idea'
 
@@ -6,6 +8,11 @@ targetCompatibility = '1.6'
 version = '0.17.v1'
 elasticSearchVerstion = '0.17.7'
 jettyVersion = '7.4.5.v20110725'
+
+buildTime = new Date()
+SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+buildTimeStr = sdf.format(buildTime)
 
 test {
 	useTestNG()
@@ -63,4 +70,16 @@ ideaProject {
 task dist(type: Zip) {
     from jar.outputs.files
     from configurations.dist
+}
+
+processResources.doLast {
+    Properties versionProps = new Properties();
+    versionProps.setProperty("number", rootProject.version)
+    versionProps.setProperty("date", buildTimeStr)
+
+    File versionFile = new File(sourceSets.main.classesDir, "/com/sonian/elasticsearch/plugin/jetty/version.properties")
+    versionFile.parentFile.mkdirs()
+    versionFile.withOutputStream {
+        versionProps.store(it, '')
+    }
 }

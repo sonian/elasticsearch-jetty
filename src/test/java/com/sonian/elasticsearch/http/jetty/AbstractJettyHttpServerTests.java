@@ -36,6 +36,9 @@ public class AbstractJettyHttpServerTests {
             .settingsBuilder()
             .put("cluster.name", "test-cluster-" + NetworkUtils.getLocalAddress().getHostName())
             .put("http.type", JettyHttpServerTransportModule.class.getName())
+            .put("node.local", true)
+            .put("gateway.type", "none")
+            .put("index.store.type", "memory")
             .build();
 
     public void putDefaultSettings(Settings.Builder settings) {

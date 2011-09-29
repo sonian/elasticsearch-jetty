@@ -16,6 +16,6 @@ public class JettyPlugin extends AbstractPlugin {
     }
 
     @Override public String description() {
-        return "Jetty Plugin";
+        return "Jetty Plugin Version: " + Version.number() + " (" + Version.date() + ")";
     }
 }
