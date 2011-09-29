@@ -2,6 +2,7 @@ package com.sonian.elasticsearch.http.jetty.handler;
 
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.AbstractHandler;
+import org.elasticsearch.common.Classes;
 import org.elasticsearch.common.logging.ESLogger;
 import org.elasticsearch.common.logging.Loggers;
 import com.sonian.elasticsearch.http.jetty.JettyHttpServerTransport;
@@ -39,6 +40,10 @@ public abstract class AbstractJettyHttpServerTransportHandler extends AbstractHa
 
     public void setTransport(JettyHttpServerTransport transport) {
         this.transport = transport;
-        this.logger = Loggers.getLogger(getClass(), transport.settings());
+        this.logger = Loggers.getLogger(buildClassLoggerName(getClass()), transport.settings());
+    }
+
+    private static String buildClassLoggerName(Class clazz) {
+        return Classes.getPackageName(clazz);
     }
 }

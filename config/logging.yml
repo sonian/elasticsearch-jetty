@@ -1,0 +1,60 @@
+rootLogger: INFO, console, file
+logger:
+  # log action execution errors for easier debugging
+  action : DEBUG
+  cluster.action.shard: DEBUG
+  cluster.metadata : DEBUG
+  discovery : DEBUG
+  discovery.zen.fd : TRACE
+  gateway : DEBUG
+  index.gateway : DEBUG
+  index.shard.recovery : DEBUG
+  index.shard.service: DEBUG
+  # ------------------------------------------------------------------------------------------
+  # Specify special logger for request logger
+  # ------------------------------------------------------------------------------------------
+  com.sonian.elasticsearch.http.jetty.handler.logging: INFO, request
+  # ------------------------------------------------
+
+# --------------------------------------------------------------------------------------------
+# Turn off additivity to avoid logging requests into common log
+# --------------------------------------------------------------------------------------------
+additivity:
+  com.sonian.elasticsearch.http.jetty.handler.logging: false
+# --------------------------------------------------------------------------------------------
+
+
+appender:
+  console:
+    type: console
+    layout:
+      type: consolePattern
+      conversionPattern: "[%d{ABSOLUTE}][%-5p][%-25c] %m%n"
+
+  syslog:
+    type: syslog
+    syslogHost: 127.0.0.1
+    facility: LOCAL6
+    layout:
+      type: pattern
+      conversionPattern: "ES: %-5p | [%t] | %c | %m%n"
+
+  file:
+    type: dailyRollingFile
+    file: ${path.logs}/${cluster.name}.log
+    datePattern: "'.'yyyy-MM-dd"
+    layout:
+      type: pattern
+      conversionPattern: "[%d{ABSOLUTE}][%-5p][%-25c] %m%n"
+
+  # ------------------------------------------------------------------------------------------
+  # Create special file logger for requests
+  # ------------------------------------------------------------------------------------------
+  request:
+    type: dailyRollingFile
+    file: ${path.logs}/${cluster.name}-request.log
+    datePattern: "'.'yyyy-MM-dd"
+    layout:
+      type: pattern
+      conversionPattern: "[%d{ABSOLUTE}] %m%n"
+  # ------------------------------------------------------------------------------------------
