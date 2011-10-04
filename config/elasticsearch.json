@@ -4,14 +4,18 @@
     },
     "http": {
         "enabled": true,
-        "type": "com.sonian.elasticsearch.http.jetty.JettyHttpServerTransportModule"
+        "type": "com.sonian.elasticsearch.http.filter.FilterHttpServerTransportModule"
     },
-    "sonian.elasticsearch.http.jetty": {
-        "request_log": {
-            "enabled": true
-        },
-        "emulate_timeout": {
-            "enabled": true
+    "sonian.elasticsearch.http.filter": {
+        "__transport_type": "netty",
+        "http_filter_chain": ["logging", "timeout"],
+        "http_filter": {
+            "timeout": {
+                "type": "timeout"
+            },
+            "logging": {
+                "type": "logging"
+            }
         }
     }
 }

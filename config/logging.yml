@@ -13,16 +13,15 @@ logger:
   # ------------------------------------------------------------------------------------------
   # Specify special logger for request logger
   # ------------------------------------------------------------------------------------------
-  com.sonian.elasticsearch.http.jetty.handler.logging: INFO, request
+  com.sonian.elasticsearch.http.filter.logging: INFO, request
   # ------------------------------------------------
 
 # --------------------------------------------------------------------------------------------
 # Turn off additivity to avoid logging requests into common log
 # --------------------------------------------------------------------------------------------
 additivity:
-  com.sonian.elasticsearch.http.jetty.handler.logging: false
+  com.sonian.elasticsearch.http.filter.logging: false
 # --------------------------------------------------------------------------------------------
-
 
 appender:
   console:

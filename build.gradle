@@ -58,6 +58,8 @@ dependencies {
     testCompile group: 'org.codehaus.jackson', name:'jackson-core-asl', version:'1.8.5', transitive: false
     testCompile group: 'org.codehaus.jackson', name:'jackson-mapper-asl', version:'1.8.5', transitive: false
 
+    runtime 'org.slf4j:slf4j-api:1.5.11'
+    runtime 'org.slf4j:slf4j-log4j12:1.5.11'
     runtime 'log4j:log4j:1.2.16'
 }
 

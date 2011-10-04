@@ -1,0 +1,102 @@
+package com.sonian.elasticsearch.http.filter;
+
+import org.elasticsearch.ElasticSearchException;
+import org.elasticsearch.common.Nullable;
+import org.elasticsearch.common.component.AbstractLifecycleComponent;
+import org.elasticsearch.common.inject.Inject;
+import org.elasticsearch.common.settings.ImmutableSettings;
+import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.common.transport.BoundTransportAddress;
+import org.elasticsearch.http.HttpServerAdapter;
+import org.elasticsearch.http.HttpServerTransport;
+import org.elasticsearch.http.HttpStats;
+
+import java.util.List;
+import java.util.Map;
+
+import static org.elasticsearch.common.collect.Lists.newArrayList;
+import static org.elasticsearch.common.collect.Maps.newHashMap;
+
+/**
+ * @author imotov
+ */
+public class FilterHttpServerTransport extends AbstractLifecycleComponent<HttpServerTransport> implements HttpServerTransport {
+
+    private final HttpServerTransport filteredHttpServerTransport;
+
+    private final FilterHttpServerAdapter[] filters;
+
+    @Inject
+    public FilterHttpServerTransport(Settings settings, @FilteredHttpServerTransport HttpServerTransport filteredHttpServerTransport,
+                                     @Nullable Map<String, FilterHttpServerAdapterFactory> filterHttpServerAdapterFactoryMap) {
+        super(settings);
+        this.filteredHttpServerTransport = filteredHttpServerTransport;
+
+        Map<String, FilterHttpServerAdapter> filters = newHashMap();
+
+        if (filterHttpServerAdapterFactoryMap != null) {
+            Map<String, Settings> filtersSettings = componentSettings.getGroups("http_filter");
+
+            for (Map.Entry<String, FilterHttpServerAdapterFactory> entry : filterHttpServerAdapterFactoryMap.entrySet()) {
+                String filterName = entry.getKey();
+                FilterHttpServerAdapterFactory filterFactory = entry.getValue();
+                Settings filterSettings = filtersSettings.get(filterName);
+                if (filterSettings == null) {
+                    filterSettings = ImmutableSettings.Builder.EMPTY_SETTINGS;
+                }
+                filters.put(filterName, filterFactory.create(filterName, filterSettings));
+            }
+
+        }
+
+        String[] filterNames = componentSettings.getAsArray("http_filter_chain");
+        List<FilterHttpServerAdapter> filterList = newArrayList();
+
+        for (String filterName : filterNames) {
+            FilterHttpServerAdapter filter = filters.get(filterName);
+            if (filter == null) {
+                throw new IllegalArgumentException("Failed to find http_filter under name [" + filterName + "]");
+            }
+            filterList.add(filter);
+        }
+        this.filters = filterList.toArray(new FilterHttpServerAdapter[filterList.size()]);
+
+    }
+
+    @Override
+    protected void doStart
+            () throws ElasticSearchException {
+        filteredHttpServerTransport.start();
+    }
+
+    @Override
+    protected void doStop
+            () throws ElasticSearchException {
+        filteredHttpServerTransport.stop();
+    }
+
+    @Override
+    protected void doClose
+            () throws ElasticSearchException {
+        filteredHttpServerTransport.close();
+    }
+
+    @Override
+    public BoundTransportAddress boundAddress
+            () {
+        return filteredHttpServerTransport.boundAddress();
+    }
+
+    @Override
+    public HttpStats stats
+            () {
+        return filteredHttpServerTransport.stats();
+    }
+
+    @Override
+    public void httpServerAdapter
+            (HttpServerAdapter
+                     httpServerAdapter) {
+        filteredHttpServerTransport.httpServerAdapter(new FilterChainManager(filters, httpServerAdapter));
+    }
+}

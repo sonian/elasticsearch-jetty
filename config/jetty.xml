@@ -3,22 +3,14 @@
 
 <Configure id="ESServer" class="org.eclipse.jetty.server.Server">
 
-    <New class="com.sonian.elasticsearch.http.jetty.handler.timeout.SimulatedTimeoutHandler"
-         id="SimulatedTimeoutHandler">
-    </New>
-
-    <New class="com.sonian.elasticsearch.http.jetty.handler.logging.RequestLogHandler"
-         id="RequestLogHandler">
-    </New>
-
-    <New class="com.sonian.elasticsearch.http.jetty.handler.adapter.HttpServerAdapterHandler"
+    <New class="com.sonian.elasticsearch.http.jetty.handler.JettyHttpServerTransportHandler"
          id="HttpServerAdapterHandler">
     </New>
 
     <New class="org.eclipse.jetty.security.HashLoginService"
          id="DefaultLoginService">
         <Set name="name">DefaultRealm</Set>
-        <Set name="config">realm.properties</Set>
+        <Set name="config">config/realm.properties</Set>
         <Set name="refreshInterval">5</Set>
         <Call name="start"/>
     </New>
@@ -329,25 +321,8 @@
         </Arg>
     </Call>
 
-    <New class="org.eclipse.jetty.server.handler.HandlerList"
-         id="MyHandlers">
-        <Set name="handlers">
-            <Array type="org.eclipse.jetty.server.Handler">
-                <Item>
-                    <Ref id="SimulatedTimeoutHandler"/>
-                </Item>
-                <Item>
-                    <Ref id="DefaultSecurityHandler"/>
-                </Item>
-                <Item>
-                    <Ref id="RequestLogHandler"/>
-                </Item>
-            </Array>
-        </Set>
-    </New>
-
     <Set name="handler">
-        <Ref id="MyHandlers"/>
+        <Ref id="DefaultSecurityHandler"/>
     </Set>
 
     <Ref id="DefaultSecurityHandler">
