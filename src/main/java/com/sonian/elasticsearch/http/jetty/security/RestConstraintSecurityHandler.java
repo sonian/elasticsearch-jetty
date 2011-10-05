@@ -183,6 +183,7 @@ public class RestConstraintSecurityHandler extends SecurityHandler implements Co
         super.doStop();
     }
 
+    @SuppressWarnings({"unchecked"})
     protected void processConstraintMapping(ConstraintMapping mapping) {
         String pathSpec = mapping.getPathSpec();
 

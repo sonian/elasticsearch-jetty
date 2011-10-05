@@ -50,6 +50,7 @@ public class HttpClient {
         return request(method, path, null);
     }
 
+    @SuppressWarnings({"unchecked"})
     public Map<String, Object> request(String method, String path, Map<String, Object> data) {
         ObjectMapper mapper = new ObjectMapper();
 

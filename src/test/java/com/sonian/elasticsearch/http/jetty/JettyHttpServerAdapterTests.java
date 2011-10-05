@@ -38,6 +38,7 @@ public class JettyHttpServerAdapterTests extends AbstractJettyHttpServerTests {
 
     }
 
+    @SuppressWarnings({"unchecked"})
     @Test
     public void testIndexingAndSearching() throws Exception {
 
@@ -64,6 +65,7 @@ public class JettyHttpServerAdapterTests extends AbstractJettyHttpServerTests {
         assertThat((Integer)((Map<String, Object>) response.get("hits")).get("total"), equalTo(1));
     }
 
+    @SuppressWarnings({"unchecked"})
     @Test
     public void testIndexingCreationFailsWithoutPassword() throws Exception {
 
