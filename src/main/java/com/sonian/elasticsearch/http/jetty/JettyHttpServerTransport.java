@@ -1,12 +1,11 @@
-package org.elasticsearch.http.jetty;
+package com.sonian.elasticsearch.http.jetty;
 
-import org.eclipse.jetty.server.Handler;
+import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.handler.HandlerCollection;
-import org.eclipse.jetty.server.handler.RequestLogHandler;
+import org.eclipse.jetty.server.nio.SelectChannelConnector;
 import org.eclipse.jetty.util.log.Log;
+import org.eclipse.jetty.xml.XmlConfiguration;
 import org.elasticsearch.ElasticSearchException;
-import org.elasticsearch.ElasticSearchParseException;
 import org.elasticsearch.common.component.AbstractLifecycleComponent;
 import org.elasticsearch.common.inject.Inject;
 import org.elasticsearch.common.network.NetworkService;
@@ -14,19 +13,18 @@ import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.BoundTransportAddress;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.common.transport.PortsRange;
-import org.elasticsearch.common.unit.TimeValue;
+import org.elasticsearch.env.Environment;
 import org.elasticsearch.http.BindHttpException;
 import org.elasticsearch.http.HttpServerAdapter;
 import org.elasticsearch.http.HttpServerTransport;
 import org.elasticsearch.http.HttpStats;
-import org.elasticsearch.http.jetty.logging.RequestLogger;
-import org.elasticsearch.http.jetty.logging.RequestLoggerWrapper;
 import org.elasticsearch.transport.BindTransportException;
 
 import java.io.IOException;
 import java.net.BindException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.URL;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -34,7 +32,7 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public class JettyHttpServerTransport extends AbstractLifecycleComponent<HttpServerTransport> implements HttpServerTransport {
 
-    private static final String SLEEP_PARAM = "sleep";
+    public static final String TRANSPORT_ATTRIBUTE = "com.sonian.elasticsearch.http.jetty.transport";
 
     private final NetworkService networkService;
 
@@ -44,13 +42,11 @@ public class JettyHttpServerTransport extends AbstractLifecycleComponent<HttpSer
 
     private final String publishHost;
 
-    private final RequestLogger requestLogger;
+    private final String jettyConfig;
 
-    private final boolean requestLogEnabled;
+    private final Environment environment;
 
-    private final boolean emulateTimeOut;
-
-    private final ESLoggerLog esLoggerLog;
+    private final ESLoggerWrapper loggerWrapper;
 
     private volatile BoundTransportAddress boundAddress;
 
@@ -62,16 +58,15 @@ public class JettyHttpServerTransport extends AbstractLifecycleComponent<HttpSer
 
 
     @Inject
-    public JettyHttpServerTransport(Settings settings, NetworkService networkService, RequestLogger requestLogger) {
+    public JettyHttpServerTransport(Settings settings, Environment environment, NetworkService networkService, ESLoggerWrapper loggerWrapper) {
         super(settings);
+        this.environment = environment;
         this.networkService = networkService;
-        this.requestLogger = requestLogger;
         this.port = componentSettings.get("port", settings.get("http.port", "9200-9300"));
         this.bindHost = componentSettings.get("bind_host", settings.get("http.bind_host", settings.get("http.host")));
         this.publishHost = componentSettings.get("publish_host", settings.get("http.publish_host", settings.get("http.host")));
-        this.requestLogEnabled = componentSettings.getAsBoolean("request_log.enabled", false);
-        this.emulateTimeOut = componentSettings.getAsBoolean("emulate_timeout.enabled", false);
-        this.esLoggerLog = new ESLoggerLog(settings);
+        this.jettyConfig = componentSettings.get("config", "jetty.xml");
+        this.loggerWrapper = loggerWrapper;
     }
 
     @Override
@@ -87,15 +82,24 @@ public class JettyHttpServerTransport extends AbstractLifecycleComponent<HttpSer
         PortsRange portsRange = new PortsRange(port);
         final AtomicReference<Exception> lastException = new AtomicReference<Exception>();
 
-        Log.setLog(esLoggerLog);
+        Log.setLog(loggerWrapper);
 
         portsRange.iterate(new PortsRange.PortCallback() {
             @Override
             public boolean onPortNumber(int portNumber) {
                 jettyBoundAddress = new InetSocketAddress(hostAddress, portNumber);
-                Server server = new Server(jettyBoundAddress);
-                server.setHandler(createJettyHandler());
                 try {
+                    URL config = environment.resolveConfig(jettyConfig);
+                    XmlConfiguration xmlConfiguration = new XmlConfiguration(config);
+                    Server server = (Server) xmlConfiguration.configure();
+
+                    server.setAttribute(TRANSPORT_ATTRIBUTE, JettyHttpServerTransport.this);
+
+                    Connector connector=new SelectChannelConnector();
+                    connector.setHost(jettyBoundAddress.getHostName());
+                    connector.setPort(jettyBoundAddress.getPort());
+                    server.addConnector(connector);
+
                     server.start();
                     jettyServer = server;
                     lastException.set(null);
@@ -103,6 +107,7 @@ public class JettyHttpServerTransport extends AbstractLifecycleComponent<HttpSer
                     lastException.set(e);
                     return false;
                 } catch (Exception e) {
+                    logger.error("Jetty Startup Failed ", e);
                     lastException.set(e);
                     return true;
                 }
@@ -120,20 +125,6 @@ public class JettyHttpServerTransport extends AbstractLifecycleComponent<HttpSer
         }
         this.boundAddress = new BoundTransportAddress(new InetSocketTransportAddress(jettyBoundAddress), new InetSocketTransportAddress(publishAddress));
 
-    }
-
-
-    private Handler createJettyHandler() {
-        JettyHttpServerHandler handler = new JettyHttpServerHandler(this);
-        final HandlerCollection handlers = new HandlerCollection();
-        handlers.addHandler(handler);
-
-        if (requestLogEnabled) {
-            RequestLogHandler requestLogHandler = new RequestLogHandler();
-            requestLogHandler.setRequestLog(new RequestLoggerWrapper(requestLogger));
-            handlers.addHandler(requestLogHandler);
-        }
-        return handlers;
     }
 
     @Override
@@ -167,27 +158,16 @@ public class JettyHttpServerTransport extends AbstractLifecycleComponent<HttpSer
         this.httpServerAdapter = httpServerAdapter;
     }
 
-    void dispatchRequest(JettyHttpServerRestRequest request, JettyHttpServerRestChannel channel) {
-        if (emulateTimeOut) {
-            if (request.hasParam(SLEEP_PARAM)) {
-                long sleep = 0;
-                try {
-                    TimeValue timeValue = TimeValue.parseTimeValue(request.param(SLEEP_PARAM), null);
-                    if (timeValue != null) {
-                        sleep = timeValue.millis();
-                    }
-                } catch (ElasticSearchParseException ex) {
-                    logger.error("Invalid sleep parameter [{}]", request.param(SLEEP_PARAM));
-                }
-                if (sleep > 0) {
-                    try {
-                        Thread.sleep(sleep);
-                    } catch (InterruptedException e) {
-                        return;
-                    }
-                }
-            }
-        }
-        httpServerAdapter.dispatchRequest(request, channel);
+    public HttpServerAdapter httpServerAdapter() {
+        return httpServerAdapter;
     }
+
+    public Settings settings() {
+        return settings;
+    }
+
+    public Settings componentSettings() {
+        return componentSettings;
+    }
+
 }

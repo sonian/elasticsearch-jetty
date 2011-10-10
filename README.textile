@@ -1,0 +1,19 @@
+h1. Jetty Plugin
+
+h2. Overview
+
+Jetty plugin consists of two modules that can be used independently: JettyHttpServerTransport and FilterHttpTransportModule.
+
+JettyHttpServerTransportModule can be used as a replacement for NettyHttpServerTransport. It embeds a fully functional and configurable Jetty 7.4.5 server and includes two jetty handlers that simplify configuration and usage of jetty with elasticsearch: JettyHttpServerTransportHandler and RestConstraintSecurityHandler.
+
+JettyHttpServerTransportHandler is Jetty handler that redirects all requests to elasticsearch. It can be used in conjunction with RestConstraintSecurityHandler. RestConstraintSecurityHandler is based on and quite similar to standard jetty ConstraintSecurityHandler. However, its handling of pathSpecs in constraints is better suited for elasticsearch. ConstraintSecurityHandler can only handle wildcards at the end of the url or if file extension is specified, which makes it unsuitable any indexing operation constraints. RestConstraintSecurityHandler is treating pathSpec the same way as ElasticSearch does and can use ElasticSearch url mapping syntax to specify constraint paths.
+
+FilterHttpTransportModule intercepts all requests that HttpServerTransport sends to elasticsearch. It can maintained a chain of filters and can be used with jetty as well as netty transports. By default, FilterHttpTransportModule is configured to work with jetty. This plugin comes with two sample filters: LoggingFitlerHttpServerAdapter and TimeoutFilterHttpServerAdapter.
+
+h2. Installation
+
+Jetty plugin can be installed as any other ES plugin using bin/plugin utility. After Jetty plugin is installed, it has to be enabled in elasticsearch.yml file. A sample configuration can be found in the <a href="config/elasticsearch.yml">config/elasticsearch.yml</a> file. The embedded jetty is configured using standard <a href="config/jetty.xml">jetty.xml</a> file. This file has to be located in the ES config directory.
+
+By default, request logging filter is logging all rest requests at the INFO level into the same logging file as all other ElasticSearch messages. It's possible to redirect request logging into a separate file. See <a href="config/logging.yml">config/logging.yml</a> for more details.
+
+

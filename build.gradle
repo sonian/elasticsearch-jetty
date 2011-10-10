@@ -1,11 +1,18 @@
+import java.text.SimpleDateFormat
+
 apply plugin: 'java'
 apply plugin: 'idea'
 
 sourceCompatibility = '1.6'
 targetCompatibility = '1.6'
-version = '0.17.v0'
+version = '0.17.1-SNAPSHOT'
 elasticSearchVerstion = '0.17.7'
 jettyVersion = '7.4.5.v20110725'
+
+buildTime = new Date()
+SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+buildTimeStr = sdf.format(buildTime)
 
 test {
 	useTestNG()
@@ -37,19 +44,45 @@ repositories {
 dependencies {
     compile group: 'org.elasticsearch', name: 'elasticsearch', version: elasticSearchVerstion
     compile group: 'org.eclipse.jetty', name: 'jetty-server', version: jettyVersion
+    compile group: 'org.eclipse.jetty', name: 'jetty-xml', version: jettyVersion
+    compile group: 'org.eclipse.jetty', name: 'jetty-security', version: jettyVersion
+
+    dist group: 'org.eclipse.jetty', name: 'jetty-server', version: jettyVersion
+    dist group: 'org.eclipse.jetty', name: 'jetty-xml', version: jettyVersion
+    dist group: 'org.eclipse.jetty', name: 'jetty-security', version: jettyVersion
 
     testCompile group: 'org.easymock', name: 'easymock', version: '3.0'
     testCompile group: 'org.testng', name: 'testng', version: '6.2'
+    testCompile group: 'org.hamcrest', name:'hamcrest-core', version:'1.3.RC2', transitive: false
+    testCompile group: 'org.hamcrest', name:'hamcrest-library', version:'1.3.RC2', transitive: false
+    testCompile group: 'org.codehaus.jackson', name:'jackson-core-asl', version:'1.8.5', transitive: false
+    testCompile group: 'org.codehaus.jackson', name:'jackson-mapper-asl', version:'1.8.5', transitive: false
 
-    dist group: 'org.eclipse.jetty', name: 'jetty-server', version: jettyVersion
+    runtime 'org.slf4j:slf4j-api:1.5.11'
+    runtime 'org.slf4j:slf4j-log4j12:1.5.11'
+    runtime 'log4j:log4j:1.2.16'
 }
 
 ideaProject {
     javaVersion = '1.6'
-    version = '1.6'
+    withXml { provider ->
+        provider.node.component.find { it.@name == 'VcsDirectoryMappings' }.mapping.@vcs = 'Git'
+    }
 }
 
 task dist(type: Zip) {
     from jar.outputs.files
     from configurations.dist
+}
+
+processResources.doLast {
+    Properties versionProps = new Properties();
+    versionProps.setProperty("number", rootProject.version)
+    versionProps.setProperty("date", buildTimeStr)
+
+    File versionFile = new File((File)sourceSets.main.classesDir, "/com/sonian/elasticsearch/plugin/jetty/version.properties")
+    versionFile.parentFile.mkdirs()
+    versionFile.withOutputStream {
+        versionProps.store(it, '')
+    }
 }

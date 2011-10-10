@@ -1,4 +1,4 @@
-package org.elasticsearch.plugin.jetty;
+package com.sonian.elasticsearch.plugin.jetty;
 
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.plugins.AbstractPlugin;
@@ -8,10 +8,7 @@ import org.elasticsearch.plugins.AbstractPlugin;
  */
 public class JettyPlugin extends AbstractPlugin {
 
-    private final Settings settings;
-
     public JettyPlugin(Settings settings) {
-        this.settings = settings;
     }
 
     @Override public String name() {
@@ -19,6 +16,6 @@ public class JettyPlugin extends AbstractPlugin {
     }
 
     @Override public String description() {
-        return "Jetty Plugin";
+        return "Jetty Plugin Version: " + Version.number() + " (" + Version.date() + ")";
     }
 }
