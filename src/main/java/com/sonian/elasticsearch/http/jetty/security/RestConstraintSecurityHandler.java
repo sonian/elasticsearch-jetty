@@ -13,8 +13,10 @@ import java.util.concurrent.CopyOnWriteArraySet;
 
 /*
  * Handler to enforce SecurityConstraints. This implementation is
- * mostly copied from  org.eclipse.jetty.security.ConstraintSecurityHandler
- * but it is using ElasticSearch path specification instead of servlet spec.
+ * based on org.eclipse.jetty.security.ConstraintSecurityHandler but it
+ * is using ElasticSearch path specification instead of servlet spec and
+ * fixes an issue that prevents multiple url specs to be used with
+ * non-empty http method.
  * It precomputes the constraint combinations for runtime efficiency.
  */
 public class RestConstraintSecurityHandler extends SecurityHandler implements ConstraintAware {
@@ -353,7 +355,6 @@ public class RestConstraintSecurityHandler extends SecurityHandler implements Co
         return false;
     }
 
-    /* ------------------------------------------------------------ */
     @Override
     public void dump(Appendable out, String indent) throws IOException {
         dumpThis(out);

@@ -1,0 +1,18 @@
+cluster.name: jetty-test
+# Switch to jetty transport without filter
+#http.type: com.sonian.elasticsearch.http.jetty.JettyHttpServerTransportModule
+
+# Switch to jetty transport with filter
+http.type: com.sonian.elasticsearch.http.filter.FilterHttpServerTransportModule
+
+# Filter setup
+sonian.elasticsearch.http.filter:
+    # Filter should use netty instead of jetty (default)
+    #transport_type": "netty"
+
+    http_filter_chain: ["logging", "timeout"]
+    http_filter:
+        # Simulated timeout filter
+        timeout.type: com.sonian.elasticsearch.http.filter.timeout.TimeoutFilterHttpServerAdapter
+        # Request logging filter
+        logging.type: com.sonian.elasticsearch.http.filter.logging.LoggingFilterHttpServerAdapter
