@@ -10,7 +10,7 @@
     <New class="org.eclipse.jetty.security.HashLoginService"
          id="DefaultLoginService">
         <Set name="name">DefaultRealm</Set>
-        <Set name="config">config/realm.properties</Set>
+        <Set name="config"><Property name="es.config"/>/realm.properties</Set>
         <Set name="refreshInterval">5</Set>
         <Call name="start"/>
     </New>

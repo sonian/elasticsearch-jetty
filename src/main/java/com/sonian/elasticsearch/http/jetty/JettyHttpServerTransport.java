@@ -6,6 +6,8 @@ import org.eclipse.jetty.server.nio.SelectChannelConnector;
 import org.eclipse.jetty.util.log.Log;
 import org.eclipse.jetty.xml.XmlConfiguration;
 import org.elasticsearch.ElasticSearchException;
+import org.elasticsearch.cluster.ClusterName;
+import org.elasticsearch.common.collect.MapBuilder;
 import org.elasticsearch.common.component.AbstractLifecycleComponent;
 import org.elasticsearch.common.inject.Inject;
 import org.elasticsearch.common.network.NetworkService;
@@ -25,6 +27,7 @@ import java.net.BindException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.URL;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -48,6 +51,8 @@ public class JettyHttpServerTransport extends AbstractLifecycleComponent<HttpSer
 
     private final ESLoggerWrapper loggerWrapper;
 
+    private final ClusterName clusterName;
+
     private volatile BoundTransportAddress boundAddress;
 
     private volatile InetSocketAddress jettyBoundAddress;
@@ -58,7 +63,7 @@ public class JettyHttpServerTransport extends AbstractLifecycleComponent<HttpSer
 
 
     @Inject
-    public JettyHttpServerTransport(Settings settings, Environment environment, NetworkService networkService, ESLoggerWrapper loggerWrapper) {
+    public JettyHttpServerTransport(Settings settings, Environment environment, NetworkService networkService, ESLoggerWrapper loggerWrapper, ClusterName clusterName) {
         super(settings);
         this.environment = environment;
         this.networkService = networkService;
@@ -67,6 +72,7 @@ public class JettyHttpServerTransport extends AbstractLifecycleComponent<HttpSer
         this.publishHost = componentSettings.get("publish_host", settings.get("http.publish_host", settings.get("http.host")));
         this.jettyConfig = componentSettings.get("config", "jetty.xml");
         this.loggerWrapper = loggerWrapper;
+        this.clusterName = clusterName;
     }
 
     @Override
@@ -89,8 +95,11 @@ public class JettyHttpServerTransport extends AbstractLifecycleComponent<HttpSer
             public boolean onPortNumber(int portNumber) {
                 jettyBoundAddress = new InetSocketAddress(hostAddress, portNumber);
                 try {
+
+
                     URL config = environment.resolveConfig(jettyConfig);
                     XmlConfiguration xmlConfiguration = new XmlConfiguration(config);
+                    xmlConfiguration.getProperties().putAll(jettySettings(portNumber));
                     Server server = (Server) xmlConfiguration.configure();
 
                     server.setAttribute(TRANSPORT_ATTRIBUTE, JettyHttpServerTransport.this);
@@ -168,6 +177,18 @@ public class JettyHttpServerTransport extends AbstractLifecycleComponent<HttpSer
 
     public Settings componentSettings() {
         return componentSettings;
+    }
+
+    private Map<String, String> jettySettings(int port) {
+        MapBuilder<String, String> jettySettings = MapBuilder.newMapBuilder();
+        jettySettings.put("es.home", environment.homeFile().getAbsolutePath());
+        jettySettings.put("es.config", environment.configFile().getAbsolutePath());
+        jettySettings.put("es.data", environment.dataFile().getAbsolutePath());
+        jettySettings.put("es.cluster.data", environment.dataWithClusterFile().getAbsolutePath());
+        jettySettings.put("es.cluster", clusterName.value());
+        jettySettings.putAll(componentSettings.getAsMap());
+        jettySettings.put("jetty.port", String.valueOf(port));
+        return jettySettings.immutableMap();
     }
 
 }
