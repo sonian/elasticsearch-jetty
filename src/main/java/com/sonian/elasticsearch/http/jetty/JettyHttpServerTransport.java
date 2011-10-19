@@ -2,7 +2,6 @@ package com.sonian.elasticsearch.http.jetty;
 
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.nio.SelectChannelConnector;
 import org.eclipse.jetty.util.log.Log;
 import org.eclipse.jetty.xml.XmlConfiguration;
 import org.elasticsearch.ElasticSearchException;
@@ -22,11 +21,8 @@ import org.elasticsearch.http.HttpServerTransport;
 import org.elasticsearch.http.HttpStats;
 import org.elasticsearch.transport.BindTransportException;
 
-import java.io.IOException;
-import java.net.BindException;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.URL;
+import java.net.*;
+import java.nio.channels.ServerSocketChannel;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -55,8 +51,6 @@ public class JettyHttpServerTransport extends AbstractLifecycleComponent<HttpSer
 
     private volatile BoundTransportAddress boundAddress;
 
-    private volatile InetSocketAddress jettyBoundAddress;
-
     private volatile Server jettyServer;
 
     private volatile HttpServerAdapter httpServerAdapter;
@@ -77,14 +71,6 @@ public class JettyHttpServerTransport extends AbstractLifecycleComponent<HttpSer
 
     @Override
     protected void doStart() throws ElasticSearchException {
-        InetAddress hostAddressX;
-        try {
-            hostAddressX = networkService.resolveBindHostAddress(bindHost);
-        } catch (IOException e) {
-            throw new BindHttpException("Failed to resolve host [" + bindHost + "]", e);
-        }
-        final InetAddress hostAddress = hostAddressX;
-
         PortsRange portsRange = new PortsRange(port);
         final AtomicReference<Exception> lastException = new AtomicReference<Exception>();
 
@@ -93,23 +79,16 @@ public class JettyHttpServerTransport extends AbstractLifecycleComponent<HttpSer
         portsRange.iterate(new PortsRange.PortCallback() {
             @Override
             public boolean onPortNumber(int portNumber) {
-                jettyBoundAddress = new InetSocketAddress(hostAddress, portNumber);
                 try {
-
-
                     URL config = environment.resolveConfig(jettyConfig);
                     XmlConfiguration xmlConfiguration = new XmlConfiguration(config);
-                    xmlConfiguration.getProperties().putAll(jettySettings(portNumber));
+                    xmlConfiguration.getProperties().putAll(jettySettings(bindHost, portNumber));
                     Server server = (Server) xmlConfiguration.configure();
 
                     server.setAttribute(TRANSPORT_ATTRIBUTE, JettyHttpServerTransport.this);
 
-                    Connector connector=new SelectChannelConnector();
-                    connector.setHost(jettyBoundAddress.getHostName());
-                    connector.setPort(jettyBoundAddress.getPort());
-                    server.addConnector(connector);
-
                     server.start();
+
                     jettyServer = server;
                     lastException.set(null);
                 } catch (BindException e) {
@@ -126,14 +105,39 @@ public class JettyHttpServerTransport extends AbstractLifecycleComponent<HttpSer
         if (lastException.get() != null) {
             throw new BindHttpException("Failed to bind to [" + port + "]", lastException.get());
         }
-        InetSocketAddress publishAddress;
-        try {
-            publishAddress = new InetSocketAddress(networkService.resolvePublishHostAddress(publishHost), jettyBoundAddress.getPort());
-        } catch (Exception e) {
-            throw new BindTransportException("Failed to resolve publish address", e);
+        InetSocketAddress jettyBoundAddress = findFirstInetConnector(jettyServer);
+        if (jettyBoundAddress != null) {
+            InetSocketAddress publishAddress;
+            try {
+                publishAddress = new InetSocketAddress(networkService.resolvePublishHostAddress(publishHost), jettyBoundAddress.getPort());
+            } catch (Exception e) {
+                throw new BindTransportException("Failed to resolve publish address", e);
+            }
+            this.boundAddress = new BoundTransportAddress(new InetSocketTransportAddress(jettyBoundAddress), new InetSocketTransportAddress(publishAddress));
+        } else {
+            throw new BindHttpException("Failed to find a jetty connector with Inet transport");
         }
-        this.boundAddress = new BoundTransportAddress(new InetSocketTransportAddress(jettyBoundAddress), new InetSocketTransportAddress(publishAddress));
+    }
 
+    private InetSocketAddress findFirstInetConnector(Server server){
+        Connector[] connectors = server.getConnectors();
+        if(connectors != null) {
+            for(Connector connector : connectors) {
+                Object connection =  connector.getConnection();
+                if (connection instanceof ServerSocketChannel) {
+                    SocketAddress address = ((ServerSocketChannel) connector.getConnection()).socket().getLocalSocketAddress();
+                    if (address instanceof InetSocketAddress) {
+                        return (InetSocketAddress) address;
+                    }
+                } else if(connection instanceof ServerSocket) {
+                    SocketAddress address = ((ServerSocket) connector.getConnection()).getLocalSocketAddress();
+                    if (address instanceof InetSocketAddress) {
+                        return (InetSocketAddress) address;
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     @Override
@@ -179,14 +183,20 @@ public class JettyHttpServerTransport extends AbstractLifecycleComponent<HttpSer
         return componentSettings;
     }
 
-    private Map<String, String> jettySettings(int port) {
+    private Map<String, String> jettySettings(String hostAddress, int port) {
         MapBuilder<String, String> jettySettings = MapBuilder.newMapBuilder();
         jettySettings.put("es.home", environment.homeFile().getAbsolutePath());
         jettySettings.put("es.config", environment.configFile().getAbsolutePath());
         jettySettings.put("es.data", environment.dataFile().getAbsolutePath());
         jettySettings.put("es.cluster.data", environment.dataWithClusterFile().getAbsolutePath());
         jettySettings.put("es.cluster", clusterName.value());
-        jettySettings.putAll(componentSettings.getAsMap());
+        if(hostAddress != null) {
+            jettySettings.put("jetty.bind_host", hostAddress);
+        }
+        for(Map.Entry<String, String> entry : componentSettings.getAsMap().entrySet()) {
+            jettySettings.put("jetty." + entry.getKey(), entry.getValue());
+        }
+        // Override jetty port in case we have a port-range
         jettySettings.put("jetty.port", String.valueOf(port));
         return jettySettings.immutableMap();
     }
