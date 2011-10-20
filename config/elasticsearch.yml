@@ -21,3 +21,5 @@ sonian.elasticsearch.http.filter:
 sonian.elasticsearch.http.jetty:
     port: 9200
     ssl_port: 9443
+# Alternative minimal configuration
+#    config: jetty-minimal.xml

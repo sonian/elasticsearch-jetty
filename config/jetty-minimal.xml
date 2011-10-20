@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<!DOCTYPE Configure PUBLIC "-//Jetty//Configure//EN" "http://www.eclipse.org/jetty/configure.dtd">
+
+<Configure id="ESServer" class="org.eclipse.jetty.server.Server">
+
+    <!-- ==================================================== -->
+    <!-- ElasticSearch Handler.                               -->
+    <!-- This handler redirects all requests to ElasticSearch -->
+    <!-- ==================================================== -->
+    <New class="com.sonian.elasticsearch.http.jetty.handler.JettyHttpServerTransportHandler"
+         id="HttpServerAdapterHandler">
+    </New>
+
+    <!-- ==================================================== -->
+    <!-- Set ElasticSearch handler as Jetty handler.          -->
+    <!-- ==================================================== -->
+    <Set name="handler">
+        <Ref id="HttpServerAdapterHandler"/>
+    </Set>
+
+    <!-- ======================================== -->
+    <!--         Add HTTP connector               -->
+    <!-- ======================================== -->
+    <Call name="addConnector">
+        <Arg>
+            <New class="org.eclipse.jetty.server.nio.SelectChannelConnector">
+                <Set name="host"><Property name="jetty.bind_host"/></Set>
+                <Set name="port"><Property name="jetty.port"/></Set>
+                <Set name="maxIdleTime">30000</Set>
+                <Set name="Acceptors">2</Set>
+            </New>
+        </Arg>
+    </Call>
+
+</Configure>
