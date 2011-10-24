@@ -321,8 +321,14 @@
         </Arg>
     </Call>
 
+    <New id="GzipHandler" class="org.eclipse.jetty.server.handler.GzipHandler">
+        <Set name="handler">
+            <Ref id="DefaultSecurityHandler"/>
+        </Set>
+    </New>
+
     <Set name="handler">
-        <Ref id="DefaultSecurityHandler"/>
+        <Ref id="GzipHandler"/>
     </Set>
 
     <Ref id="DefaultSecurityHandler">
