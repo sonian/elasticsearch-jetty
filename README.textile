@@ -10,10 +10,20 @@ JettyHttpServerTransportHandler is Jetty handler that redirects all requests to 
 
 FilterHttpTransportModule intercepts all requests that HttpServerTransport sends to elasticsearch. It can maintained a chain of filters and can be used with jetty as well as netty transports. By default, FilterHttpTransportModule is configured to work with jetty. This plugin comes with two sample filters: LoggingFitlerHttpServerAdapter and TimeoutFilterHttpServerAdapter.
 
-h2. Installation
+h2. Installation and Configuration
 
-Jetty plugin can be installed as any other ES plugin using bin/plugin utility. After Jetty plugin is installed, it has to be enabled in elasticsearch.yml file. A sample configuration can be found in the <a href="config/elasticsearch.yml">config/elasticsearch.yml</a> file. The embedded jetty is configured using standard <a href="config/jetty.xml">jetty.xml</a> file. This file has to be located in the ES config directory.
+Jetty plugin can be installed as any other ES plugin using bin/plugin utility. After Jetty plugin is installed, it has to be enabled in elasticsearch.yml file. A sample configuration can be found in the <a href="config/elasticsearch.yml">config/elasticsearch.yml</a> file. The embedded jetty is configured using standard <a href="config/jetty.xml">jetty.xml</a> file. By default, this file has to be located in the ES config directory. An alternative location can be specified using the @sonian.elasticsearch.http.jetty.config@ setting. In order to function properly, the Jetty configuration has to create @JettyHttpServerTransportHandler@ and add at least one internet connector. See <a href="config/jetty-minimal.xml">jetty-minimal.xml</a> for a minimal functional configuration. ElasticSearch is using the first available internet connector to determine bind and publish addresses of the http transport.
 
 By default, request logging filter is logging all rest requests at the INFO level into the same logging file as all other ElasticSearch messages. It's possible to redirect request logging into a separate file. See <a href="config/logging.yml">config/logging.yml</a> for more details.
 
+Jetty plugin exposes several ES settings as Jetty properties that can be used in Jetty configuration files using @<Property name="property.name"/>@
+
+* @es.home@ - ElasticSearch home directory
+* @es.config@ - ElasticSearch configuration directory
+* @es.data@ - ElasticSearch data directory
+* @es.cluster.data@ - ElasticSearch data directory for the cluster
+* @es.cluster@ - Cluster name
+* @jetty.bing_host@ - Http bind host, if the setting @sonian.elasticsearch.http.jetty.bind_host@ is not specified, ElasticSearch will try to use values specified in @http.bind_host@ and @http.host@ settings.
+* @jetty.port@ - Http port, if the setting @sonian.elasticsearch.http.jetty.port@ is not specified, ElasticSearch will try to use http.port or default to 9200-9300. If port is specified in form of the range, ElasticSearch will try to start Jetty with each individual port number iterating through the range.
+* @jetty.*@ - all other settings specified in @sonian.elasticsearch.http.jetty.@ are exposed as Jetty properties. For example, the setting @sonian.elasticsearch.http.jetty.foo@ can be referred to in Jetty configuration as *<Property name="jetty.foo"/>*.
 
