@@ -5,7 +5,7 @@ apply plugin: 'idea'
 
 sourceCompatibility = '1.6'
 targetCompatibility = '1.6'
-version = '0.17.2.0-SNAPSHOT'
+version = '0.17.2.0'
 elasticSearchVerstion = '0.17.7'
 jettyVersion = '7.4.5.v20110725'
 
