@@ -21,6 +21,7 @@ import org.elasticsearch.http.HttpServerTransport;
 import org.elasticsearch.http.HttpStats;
 import org.elasticsearch.transport.BindTransportException;
 
+import java.io.File;
 import java.net.*;
 import java.nio.channels.ServerSocketChannel;
 import java.util.Map;
@@ -119,17 +120,17 @@ public class JettyHttpServerTransport extends AbstractLifecycleComponent<HttpSer
         }
     }
 
-    private InetSocketAddress findFirstInetConnector(Server server){
+    private InetSocketAddress findFirstInetConnector(Server server) {
         Connector[] connectors = server.getConnectors();
-        if(connectors != null) {
-            for(Connector connector : connectors) {
-                Object connection =  connector.getConnection();
+        if (connectors != null) {
+            for (Connector connector : connectors) {
+                Object connection = connector.getConnection();
                 if (connection instanceof ServerSocketChannel) {
                     SocketAddress address = ((ServerSocketChannel) connector.getConnection()).socket().getLocalSocketAddress();
                     if (address instanceof InetSocketAddress) {
                         return (InetSocketAddress) address;
                     }
-                } else if(connection instanceof ServerSocket) {
+                } else if (connection instanceof ServerSocket) {
                     SocketAddress address = ((ServerSocket) connector.getConnection()).getLocalSocketAddress();
                     if (address instanceof InetSocketAddress) {
                         return (InetSocketAddress) address;
@@ -187,18 +188,29 @@ public class JettyHttpServerTransport extends AbstractLifecycleComponent<HttpSer
         MapBuilder<String, String> jettySettings = MapBuilder.newMapBuilder();
         jettySettings.put("es.home", environment.homeFile().getAbsolutePath());
         jettySettings.put("es.config", environment.configFile().getAbsolutePath());
-        jettySettings.put("es.data", environment.dataFile().getAbsolutePath());
-        jettySettings.put("es.cluster.data", environment.dataWithClusterFile().getAbsolutePath());
+        jettySettings.put("es.data", getAbsolutePaths(environment.dataFiles()));
+        jettySettings.put("es.cluster.data", getAbsolutePaths(environment.dataWithClusterFiles()));
         jettySettings.put("es.cluster", clusterName.value());
-        if(hostAddress != null) {
+        if (hostAddress != null) {
             jettySettings.put("jetty.bind_host", hostAddress);
         }
-        for(Map.Entry<String, String> entry : componentSettings.getAsMap().entrySet()) {
+        for (Map.Entry<String, String> entry : componentSettings.getAsMap().entrySet()) {
             jettySettings.put("jetty." + entry.getKey(), entry.getValue());
         }
         // Override jetty port in case we have a port-range
         jettySettings.put("jetty.port", String.valueOf(port));
         return jettySettings.immutableMap();
+    }
+
+    private String getAbsolutePaths(File[] files) {
+        StringBuilder buf = new StringBuilder();
+        for (File file : files) {
+            if (buf.length() > 0) {
+                buf.append(',');
+            }
+            buf.append(file.getAbsolutePath());
+        }
+        return buf.toString();
     }
 
 }
