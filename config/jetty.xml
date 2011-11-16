@@ -68,7 +68,7 @@
                 <New class="org.eclipse.jetty.security.ConstraintMapping">
                     <Set name="method">DELETE</Set>
                     <Set name="pathSpec">
-                        /_template/{name},/{index},/{index}/_query,/{index}/{type},
+                        /,/_template/{name},/{index},/{index}/_query,/{index}/{type},
                         /{index}/{type}/_mapping,/{index}/{type}/_query,/{index}/{type}/{id}
                     </Set>
                     <Set name="constraint">
