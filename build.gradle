@@ -65,6 +65,7 @@ if (mavenSnapshotRepoUrl == null) {
 }
 
 repositories {
+    mavenLocal()
     mavenCentral()
     mavenRepo urls: 'https://repository.jboss.org/nexus/content/groups/public'
 	mavenRepo urls: 'http://repository.codehaus.org/'
