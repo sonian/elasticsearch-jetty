@@ -164,7 +164,7 @@ public class JettyHttpServerTransport extends AbstractLifecycleComponent<HttpSer
 
     @Override
     public HttpStats stats() {
-        return new HttpStats(0);
+        return new HttpStats(0,0);
     }
 
     @Override
