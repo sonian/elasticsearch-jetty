@@ -23,15 +23,24 @@ import java.util.Map;
 public class LoggingFilterHttpServerAdapter implements FilterHttpServerAdapter {
     protected volatile ESLogger logger;
 
+    private final RequestLoggingLevelSettings requestLoggingLevelSettings;
+
     @Inject
-    public LoggingFilterHttpServerAdapter(Settings settings, @Assisted String name, @Assisted Settings filterSettings) {
+    public LoggingFilterHttpServerAdapter(Settings settings, @Assisted String name, @Assisted Settings filterSettings, RequestLoggingLevelSettings requestLoggingLevelSettings) {
         this.logger = Loggers.getLogger(Classes.getPackageName(getClass()), settings);
+        this.requestLoggingLevelSettings = requestLoggingLevelSettings;
+        requestLoggingLevelSettings.updateSettings(filterSettings);
+    }
+
+    public RequestLoggingLevelSettings requestLoggingLevelSettings() {
+        return requestLoggingLevelSettings;
     }
 
     @Override
     public void doFilter(HttpRequest request, HttpChannel channel, FilterChain filterChain) {
-        if (logger.isInfoEnabled()) {
-            filterChain.doFilter(request, new LoggingHttpChannel(request, channel));
+        RequestLoggingLevel level = requestLoggingLevelSettings.getLoggingLevel(request.method(), request.path());
+        if (level.shouldLog(logger)) {
+            filterChain.doFilter(request, new LoggingHttpChannel(request, channel, level.logBody()));
         } else {
             filterChain.doFilter(request, channel);
         }
@@ -74,13 +83,17 @@ public class LoggingFilterHttpServerAdapter implements FilterHttpServerAdapter {
 
         private final String content;
 
-        public LoggingHttpChannel(HttpRequest request, HttpChannel channel) {
+        public LoggingHttpChannel(HttpRequest request, HttpChannel channel, boolean logBody) {
             this.channel = channel;
             method = request.method().name();
             path = request.rawPath();
             params = mapToString(request.params());
             timestamp = System.currentTimeMillis();
-            content = request.contentAsString();
+            if(logBody) {
+                content = request.contentAsString();
+            } else {
+                content = null;
+            }
         }
 
 
@@ -94,15 +107,26 @@ public class LoggingFilterHttpServerAdapter implements FilterHttpServerAdapter {
             }
             channel.sendResponse(response);
             long latency = System.currentTimeMillis() - timestamp;
-            logger.info("{} {} {} {} {} {} {} [{}]",
-                    method,
-                    path,
-                    params,
-                    response.status().getStatus(),
-                    response.status(),
-                    contentLength >= 0 ? contentLength : "-",
-                    latency,
-                    content);
+            if(content != null) {
+                logger.info("{} {} {} {} {} {} {} [{}]",
+                        method,
+                        path,
+                        params,
+                        response.status().getStatus(),
+                        response.status(),
+                        contentLength >= 0 ? contentLength : "-",
+                        latency,
+                        content);
+            } else {
+                logger.info("{} {} {} {} {} {} {}",
+                        method,
+                        path,
+                        params,
+                        response.status().getStatus(),
+                        response.status(),
+                        contentLength >= 0 ? contentLength : "-",
+                        latency);
+            }
         }
     }
 
