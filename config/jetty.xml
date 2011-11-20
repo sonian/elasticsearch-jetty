@@ -361,10 +361,10 @@
                     <!-- See http://wiki.eclipse.org/Jetty/Howto/Configure_SSL for more details -->
                     <New class="org.eclipse.jetty.http.ssl.SslContextFactory">
                         <Set name="keyStore"><Property name="es.config"/>/keystore</Set>
-                        <Set name="keyStorePassword">OBF:1nc01vuz1w8f1w1c1rbu1rac1w261w9b1vub1ndq</Set>
-                        <Set name="keyManagerPassword">OBF:1nc01vuz1w8f1w1c1rbu1rac1w261w9b1vub1ndq</Set>
+                        <Set name="keyStorePassword"><Property name="jetty.keystore_password"/></Set>
+                        <Set name="keyManagerPassword"><Property name="jetty.keystore_password"/></Set>
                         <Set name="trustStore"><Property name="es.config"/>/keystore</Set>
-                        <Set name="trustStorePassword">OBF:1nc01vuz1w8f1w1c1rbu1rac1w261w9b1vub1ndq</Set>
+                        <Set name="trustStorePassword"><Property name="jetty.keystore_password"/></Set>
                     </New>
                 </Arg>
                 <Set name="host"><Property name="jetty.ssl_bind_host"/></Set>
