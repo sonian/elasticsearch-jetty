@@ -2,6 +2,8 @@ package com.sonian.elasticsearch.http.filter;
 
 import org.elasticsearch.ElasticSearchException;
 import org.elasticsearch.common.Nullable;
+import org.elasticsearch.common.collect.ImmutableList;
+import org.elasticsearch.common.collect.MapBuilder;
 import org.elasticsearch.common.component.AbstractLifecycleComponent;
 import org.elasticsearch.common.inject.Inject;
 import org.elasticsearch.common.settings.ImmutableSettings;
@@ -15,7 +17,6 @@ import java.util.List;
 import java.util.Map;
 
 import static org.elasticsearch.common.collect.Lists.newArrayList;
-import static org.elasticsearch.common.collect.Maps.newHashMap;
 
 /**
  * @author imotov
@@ -26,13 +27,17 @@ public class FilterHttpServerTransport extends AbstractLifecycleComponent<HttpSe
 
     private final FilterHttpServerAdapter[] filters;
 
+    private Map<String, FilterHttpServerAdapter> filterMap;
+
+    private List<String> filterNames;
+
     @Inject
     public FilterHttpServerTransport(Settings settings, @FilteredHttpServerTransport HttpServerTransport filteredHttpServerTransport,
                                      @Nullable Map<String, FilterHttpServerAdapterFactory> filterHttpServerAdapterFactoryMap) {
         super(settings);
         this.filteredHttpServerTransport = filteredHttpServerTransport;
 
-        Map<String, FilterHttpServerAdapter> filters = newHashMap();
+        MapBuilder<String, FilterHttpServerAdapter> filters = MapBuilder.newMapBuilder();
 
         if (filterHttpServerAdapterFactoryMap != null) {
             Map<String, Settings> filtersSettings = componentSettings.getGroups("http_filter");
@@ -49,6 +54,8 @@ public class FilterHttpServerTransport extends AbstractLifecycleComponent<HttpSe
 
         }
 
+        filterMap = filters.immutableMap();
+
         String[] filterNames = componentSettings.getAsArray("http_filter_chain");
         List<FilterHttpServerAdapter> filterList = newArrayList();
 
@@ -60,7 +67,7 @@ public class FilterHttpServerTransport extends AbstractLifecycleComponent<HttpSe
             filterList.add(filter);
         }
         this.filters = filterList.toArray(new FilterHttpServerAdapter[filterList.size()]);
-
+        this.filterNames = ImmutableList.copyOf(filterNames);
     }
 
     @Override
@@ -98,5 +105,13 @@ public class FilterHttpServerTransport extends AbstractLifecycleComponent<HttpSe
             (HttpServerAdapter
                      httpServerAdapter) {
         filteredHttpServerTransport.httpServerAdapter(new FilterChainManager(filters, httpServerAdapter));
+    }
+
+    public List<String> filterNames() {
+        return filterNames;
+    }
+
+    public FilterHttpServerAdapter filter(String name) {
+        return filterMap.get(name);
     }
 }
