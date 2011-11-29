@@ -3,13 +3,14 @@ package com.sonian.elasticsearch.http.jetty.security;
 import org.eclipse.jetty.http.security.Constraint;
 import org.eclipse.jetty.security.*;
 import org.eclipse.jetty.server.*;
-import org.eclipse.jetty.util.StringMap;
 import org.eclipse.jetty.util.TypeUtil;
 
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
+
+import static org.elasticsearch.common.collect.Maps.newHashMap;
 
 /*
  * Handler to enforce SecurityConstraints. This implementation is
@@ -24,7 +25,8 @@ public class RestConstraintSecurityHandler extends SecurityHandler implements Co
 
     private final List<ConstraintMapping> constraintMappings = new CopyOnWriteArrayList<ConstraintMapping>();
     private final Set<String> roles = new CopyOnWriteArraySet<String>();
-    private final RestPathMap<Map<String, RoleInfo>> constraintMap = new RestPathMap<Map<String, RoleInfo>>();
+    private final Map<String, RestPathMap<RoleInfo>> constraintMap = newHashMap();
+    private RoleInfo defaultRoleInfo = null;
     private boolean strict = true;
 
     /**
@@ -140,7 +142,8 @@ public class RestConstraintSecurityHandler extends SecurityHandler implements Co
         constraintMappings.add(mapping);
         if (mapping.getConstraint() != null && mapping.getConstraint().getRoles() != null)
             for (String role : mapping.getConstraint().getRoles())
-                addRole(role);
+                if (!"*".equals(role))
+                    addRole(role);
 
         if (isStarted()) {
             processConstraintMapping(mapping);
@@ -185,92 +188,87 @@ public class RestConstraintSecurityHandler extends SecurityHandler implements Co
         super.doStop();
     }
 
-    @SuppressWarnings({"unchecked"})
-    protected void processConstraintMapping(ConstraintMapping mapping) {
-        String pathSpec = mapping.getPathSpec();
+    private void addConstraint(RoleInfo roleInfo, Constraint constraint) {
+        if (roleInfo.isForbidden())
+            return;
 
-        StringTokenizer tok = new StringTokenizer(pathSpec, PATH_SPEC_SEPARATORS);
+        boolean forbidden = constraint.isForbidden();
+        roleInfo.setForbidden(forbidden);
+        if (!forbidden) {
+            UserDataConstraint userDataConstraint = UserDataConstraint.get(constraint.getDataConstraint());
+            roleInfo.setUserDataConstraint(userDataConstraint);
 
-        while (tok.hasMoreTokens()) {
-            String spec = tok.nextToken().trim();
-
-            Map<String, RoleInfo> mappings = constraintMap.get(spec);
-            if (mappings == null) {
-                mappings = (Map<String, RoleInfo>) new StringMap();
-                constraintMap.put(spec, mappings);
-            }
-            RoleInfo allMethodsRoleInfo = mappings.get(null);
-            if (allMethodsRoleInfo != null && allMethodsRoleInfo.isForbidden())
-                return;
-
-            String httpMethod = mapping.getMethod();
-            RoleInfo roleInfo = mappings.get(httpMethod);
-            if (roleInfo == null) {
-                roleInfo = new RoleInfo();
-                mappings.put(httpMethod, roleInfo);
-                if (allMethodsRoleInfo != null) {
-                    roleInfo.combine(allMethodsRoleInfo);
-                }
-            }
-            if (roleInfo.isForbidden())
-                return;
-
-            Constraint constraint = mapping.getConstraint();
-            boolean forbidden = constraint.isForbidden();
-            roleInfo.setForbidden(forbidden);
-            if (forbidden) {
-                if (httpMethod == null) {
-                    mappings.clear();
-                    mappings.put(null, roleInfo);
-                }
-            } else {
-                UserDataConstraint userDataConstraint = UserDataConstraint.get(constraint.getDataConstraint());
-                roleInfo.setUserDataConstraint(userDataConstraint);
-
-                boolean checked = constraint.getAuthenticate();
-                roleInfo.setChecked(checked);
-                if (roleInfo.isChecked()) {
-                    if (constraint.isAnyRole()) {
-                        if (strict) {
-                            // * means "all defined roles"
-                            for (String role : roles)
-                                roleInfo.addRole(role);
-                        } else
-                            // * means any role
-                            roleInfo.setAnyRole(true);
-                    } else {
-                        String[] newRoles = constraint.getRoles();
-                        for (String role : newRoles) {
-                            if (strict && !roles.contains(role))
-                                throw new IllegalArgumentException("Attempt to use undeclared role: " + role + ", known roles: " + roles);
+            boolean checked = constraint.getAuthenticate();
+            roleInfo.setChecked(checked);
+            if (roleInfo.isChecked()) {
+                if (constraint.isAnyRole()) {
+                    if (strict) {
+                        // * means "all defined roles"
+                        for (String role : roles)
                             roleInfo.addRole(role);
-                        }
-                    }
-                }
-                if (httpMethod == null) {
-                    for (Map.Entry<String, RoleInfo> entry : mappings.entrySet()) {
-                        if (entry.getKey() != null) {
-                            RoleInfo specific = entry.getValue();
-                            specific.combine(roleInfo);
-                        }
+                    } else
+                        // * means any role
+                        roleInfo.setAnyRole(true);
+                } else {
+                    String[] newRoles = constraint.getRoles();
+                    for (String role : newRoles) {
+                        if (strict && !roles.contains(role))
+                            throw new IllegalArgumentException("Attempt to use undeclared role: " + role + ", known roles: " + roles);
+                        roleInfo.addRole(role);
                     }
                 }
             }
         }
     }
 
+    protected void processConstraintMapping(ConstraintMapping mapping) {
+        String pathSpec = mapping.getPathSpec();
+
+        StringTokenizer tok = new StringTokenizer(pathSpec, PATH_SPEC_SEPARATORS);
+        String httpMethod = mapping.getMethod();
+
+        while (tok.hasMoreTokens()) {
+            String spec = tok.nextToken().trim();
+
+            if (httpMethod == null) {
+                if ("*".equals(spec)) {
+                    if (defaultRoleInfo == null) {
+                        defaultRoleInfo = new RoleInfo();
+                    }
+                    addConstraint(defaultRoleInfo, mapping.getConstraint());
+                } else {
+                    throw new IllegalArgumentException("No method specified for PathSpec " + pathSpec + ".");
+                }
+            }
+
+            RestPathMap<RoleInfo> mappings = constraintMap.get(httpMethod);
+            if (mappings == null) {
+                mappings = new RestPathMap<RoleInfo>();
+                constraintMap.put(httpMethod, mappings);
+            }
+
+            RoleInfo roleInfo = mappings.get(spec);
+            if (roleInfo == null) {
+                roleInfo = new RoleInfo();
+                mappings.put(spec, roleInfo);
+            }
+            addConstraint(roleInfo, mapping.getConstraint());
+        }
+    }
+
     protected Object prepareConstraintInfo(String pathInContext, Request request) {
-        Map<String, RoleInfo> mappings = constraintMap.match(pathInContext);
+        String httpMethod = request.getMethod();
+
+        RestPathMap<RoleInfo> mappings = constraintMap.get(httpMethod);
 
         if (mappings != null) {
-            String httpMethod = request.getMethod();
-            RoleInfo roleInfo = mappings.get(httpMethod);
-            if (roleInfo == null)
-                roleInfo = mappings.get(null);
-            return roleInfo;
+            RoleInfo roleInfo = mappings.match(pathInContext);
+            if (roleInfo != null) {
+                return roleInfo;
+            }
         }
 
-        return null;
+        return defaultRoleInfo;
     }
 
     protected boolean checkUserDataPermissions(String pathInContext, Request request, Response response, Object constraintInfo) throws IOException {

@@ -107,7 +107,17 @@ public class JettyHttpServerAdapterTests extends AbstractJettyHttpServerTests {
 
         response = httpClient("server1").request("GET", "testidx/msg/_search?q=*:*");
         assertThat((Integer)((Map<String, Object>) response.get("hits")).get("total"), equalTo(1));
+    }
 
+    @SuppressWarnings({"unchecked"})
+    @Test
+    public void testDefaultPermissions() throws Exception {
 
+        try {
+            httpClient("server1").request("POST", "_cluster/health");
+            assertThat("Should throw access denied exception", false);
+        } catch (ElasticSearchException ex) {
+            assertThat(ex.getMessage(), equalTo("HTTP 401"));
+        }
     }
 }
