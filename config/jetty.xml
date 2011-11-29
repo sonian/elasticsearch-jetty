@@ -242,7 +242,7 @@
                         /_template/{name},/{index},/{index}/_cache/clear,/{index}/_close,/{index}/_flush,
                         /{index}/_gateway/snapshot,/{index}/_mapping,/{index}/_open,/{index}/_optimize,
                         /{index}/_refresh,/{index}/{type},/{index}/{type}/_mapping,/{index}/{type}/{id},
-                        /{index}/{type}/{id}/_create
+                        /{index}/{type}/{id}/_create,/{index}/_bulk,/{index}/{type}/_bulk
                     </Set>
                     <Set name="constraint">
                         <Ref id="ReadWriteSecurityConstraint"/>
@@ -261,7 +261,7 @@
                     <Set name="pathSpec">
                         /_cluster/nodes/_restart,/_cluster/nodes/_shutdown,
                         /_cluster/nodes/{nodeId}/_restart,/_cluster/nodes/{nodeId}/_shutdown,
-                        /_shutdown
+                        /_shutdown,/_cluster/reroute
                     </Set>
                     <Set name="constraint">
                         <Ref id="AdminSecurityConstraint"/>
@@ -279,7 +279,7 @@
                     <Set name="method">PUT</Set>
                     <Set name="pathSpec">
                         /_bulk,/_template/{name},/{index},/{index}/_mapping,/{index}/_settings,/{index}/{type}/_mapping,
-                        /{index}/{type}/{id},/{index}/{type}/{id}/_create
+                        /{index}/{type}/{id},/{index}/{type}/{id}/_create,/{index}/_bulk,/{index}/{type}/_bulk
                     </Set>
                     <Set name="constraint">
                         <Ref id="ReadWriteSecurityConstraint"/>
