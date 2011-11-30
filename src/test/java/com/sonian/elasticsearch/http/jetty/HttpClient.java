@@ -2,9 +2,9 @@ package com.sonian.elasticsearch.http.jetty;
 
 import org.codehaus.jackson.map.ObjectMapper;
 import org.elasticsearch.ElasticSearchException;
+import org.elasticsearch.common.codec.binary.Base64;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.common.transport.TransportAddress;
-import sun.misc.BASE64Encoder;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,9 +33,8 @@ public class HttpClient {
             throw new ElasticSearchException("", e);
         }
         if (username != null) {
-            BASE64Encoder enc = new sun.misc.BASE64Encoder();
             String userPassword = username + ":" + password;
-            encodedAuthorization = enc.encode(userPassword.getBytes());
+            encodedAuthorization =  Base64.encodeBase64String(userPassword.getBytes());
         } else {
             encodedAuthorization = null;
         }
