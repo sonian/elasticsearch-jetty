@@ -14,9 +14,9 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintWriter;
 import java.util.Map;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 import static com.sonian.elasticsearch.http.filter.logging.RequestLoggingLevel.Level.*;
 import static org.elasticsearch.rest.RestRequest.Method.GET;
@@ -53,15 +53,14 @@ public class LoggingFilterHttpServerAdapterTests extends AbstractJettyHttpServer
         // Shouldn't log cluster health call
         Map<String, Object> response = httpClient("server1").request("_cluster/health");
         assertThat((String) response.get("status"), equalTo("green"));
-        assertThat(mockESLoggerFactory.getLog(), equalTo(""));
-        mockESLoggerFactory.resetLog();
 
         Map<String, Object> data = createSearchQuery("user:kimchy");
         httpClient("server1").request("POST", "_search", data);
         // Should start with logging for the POST /_search request
-        assertThat(mockESLoggerFactory.getLog(), startsWith("INFO:[server1] POST /_search - 200 OK"));
+        String logMessage = mockESLoggerFactory.getMessage();
+        assertThat(logMessage, startsWith("INFO:[server1] POST /_search - 200 OK"));
         // should contain request body
-        assertThat(mockESLoggerFactory.getLog(), containsString("user:kimchy"));
+        assertThat(logMessage, containsString("user:kimchy"));
     }
 
     @Test
@@ -89,15 +88,15 @@ public class LoggingFilterHttpServerAdapterTests extends AbstractJettyHttpServer
         // Should log cluster health call
         Map<String, Object> response = httpClient("server1").request("_cluster/health");
         assertThat((String) response.get("status"), equalTo("green"));
-        assertThat(mockESLoggerFactory.getLog(), startsWith("INFO:[server1] GET /_cluster/health - 200 OK"));
-        mockESLoggerFactory.resetLog();
+        assertThat(mockESLoggerFactory.getMessage(), startsWith("INFO:[server1] GET /_cluster/health - 200 OK"));
 
         Map<String, Object> data = createSearchQuery("user:kimchy");
         httpClient("server1").request("POST", "_search", data);
+        String logMessage = mockESLoggerFactory.getMessage();
         // Should start with logging for the POST /_search request
-        assertThat(mockESLoggerFactory.getLog(), startsWith("INFO:[server1] POST /_search - 200 OK"));
+        assertThat(logMessage, startsWith("INFO:[server1] POST /_search - 200 OK"));
         // shouldn't contain request body
-        assertThat(mockESLoggerFactory.getLog(), not(containsString("user:kimchy")));
+        assertThat(logMessage, not(containsString("user:kimchy")));
     }
 
     private Map<String, Object> createSearchQuery(String queryString) {
@@ -110,12 +109,27 @@ public class LoggingFilterHttpServerAdapterTests extends AbstractJettyHttpServer
                 ).immutableMap();
     }
 
+    private class QueueMessageCollector implements CollectingESLogger.LogMessageCollector {
+        private LinkedBlockingQueue<String> messages = new LinkedBlockingQueue<String>();
+
+        public void log(String message) {
+            try {
+                messages.put(message);
+            } catch (InterruptedException ex) {
+                // Ignore
+            }
+        }
+
+        public String getMessage(int timeout, TimeUnit unit) throws InterruptedException{
+            return messages.poll(timeout, unit);
+        }
+
+    }
+
     private class MockESLoggerFactory extends ESLoggerFactory {
         private final ESLoggerFactory realFactory = new Log4jESLoggerFactory();
 
-        private final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-
-        private final PrintWriter printWriter = new PrintWriter(byteArrayOutputStream);
+        private final QueueMessageCollector messageCollector = new QueueMessageCollector();
 
         private final String level;
 
@@ -130,17 +144,21 @@ public class LoggingFilterHttpServerAdapterTests extends AbstractJettyHttpServer
         protected ESLogger newInstance(String prefix, String name) {
             if (name.endsWith(suffix)) {
                 logger.info("Asked for Logger " + prefix + ":" + name);
-                return new PrintWriterESLogger(level, printWriter, prefix, name);
+                return new CollectingESLogger(level, messageCollector, prefix, name);
             }
             return realFactory.newInstance(name);
         }
 
-        public String getLog() {
-            return new String(byteArrayOutputStream.toByteArray());
+        public String getMessage(int timeout, TimeUnit unit) {
+            try {
+                return messageCollector.getMessage(timeout, unit);
+            } catch (InterruptedException ex) {
+                return null;
+            }
         }
 
-        public void resetLog() {
-            byteArrayOutputStream.reset();
+        public String getMessage() {
+            return getMessage(1, TimeUnit.SECONDS);
         }
     }
 
