@@ -354,11 +354,12 @@
     <!-- ======================================== -->
     <!--         Add HTTPS connector               -->
     <!-- ======================================== -->
+    <!-- See http://wiki.eclipse.org/Jetty/Howto/Configure_SSL for more details -->
+    <!--
     <Call name="addConnector">
         <Arg>
             <New class="org.eclipse.jetty.server.ssl.SslSelectChannelConnector">
                 <Arg>
-                    <!-- See http://wiki.eclipse.org/Jetty/Howto/Configure_SSL for more details -->
                     <New class="org.eclipse.jetty.http.ssl.SslContextFactory">
                         <Set name="keyStore"><Property name="es.config"/>/keystore</Set>
                         <Set name="keyStorePassword"><Property name="jetty.keystore_password"/></Set>
@@ -373,5 +374,5 @@
             </New>
         </Arg>
     </Call>
-
+    -->
 </Configure>
