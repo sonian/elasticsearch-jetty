@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<assembly>
+    <id></id>
+    <formats>
+        <format>zip</format>
+    </formats>
+    <includeBaseDirectory>false</includeBaseDirectory>
+    <dependencySets>
+        <dependencySet>
+            <outputDirectory>/</outputDirectory>
+            <useProjectArtifact>true</useProjectArtifact>
+            <useTransitiveFiltering>true</useTransitiveFiltering>
+            <excludes>
+                <exclude>org.elasticsearch:elasticsearch</exclude>
+            </excludes>
+        </dependencySet>
+        <dependencySet>
+            <outputDirectory>/</outputDirectory>
+            <useProjectArtifact>true</useProjectArtifact>
+            <useTransitiveFiltering>true</useTransitiveFiltering>
+            <includes>
+                <include>org.eclipse.jetty:jetty-server</include>
+                <include>org.eclipse.jetty:jetty-xml</include>
+                <include>org.eclipse.jetty:jetty-security</include>
+            </includes>
+        </dependencySet>
+    </dependencySets>
+</assembly>
