@@ -56,4 +56,4 @@ sonian.elasticsearch.http.jetty:
 
 
 # Alternative minimal configuration
-#    config: jetty-minimal.xml
+#    config: jetty-minimal.xml,jetty-ssl.xml

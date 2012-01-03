@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<!DOCTYPE Configure PUBLIC "-//Jetty//Configure//EN" "http://www.eclipse.org/jetty/configure.dtd">
+
+<Configure id="ESServer" class="org.eclipse.jetty.server.Server">
+
+    <!-- ======================================== -->
+    <!--         Add HTTPS connector               -->
+    <!-- ======================================== -->
+    <!-- See http://wiki.eclipse.org/Jetty/Howto/Configure_SSL for more details -->
+    <Call name="addConnector">
+        <Arg>
+            <New class="org.eclipse.jetty.server.ssl.SslSelectChannelConnector">
+                <Arg>
+                    <New class="org.eclipse.jetty.http.ssl.SslContextFactory">
+                        <Set name="keyStore"><Property name="es.config"/>/keystore</Set>
+                        <Set name="keyStorePassword"><Property name="jetty.keystore_password"/></Set>
+                        <Set name="keyManagerPassword"><Property name="jetty.keystore_password"/></Set>
+                        <Set name="trustStore"><Property name="es.config"/>/keystore</Set>
+                        <Set name="trustStorePassword"><Property name="jetty.keystore_password"/></Set>
+                    </New>
+                </Arg>
+                <Set name="host"><Property name="jetty.ssl_bind_host"/></Set>
+                <Set name="port"><Property name="jetty.ssl_port"/></Set>
+                <Set name="maxIdleTime">30000</Set>
+            </New>
+        </Arg>
+    </Call>
+
+</Configure>
