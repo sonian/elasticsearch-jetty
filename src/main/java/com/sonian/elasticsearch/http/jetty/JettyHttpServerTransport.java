@@ -42,7 +42,7 @@ public class JettyHttpServerTransport extends AbstractLifecycleComponent<HttpSer
 
     private final String publishHost;
 
-    private final String jettyConfig;
+    private final String[] jettyConfig;
 
     private final Environment environment;
 
@@ -65,7 +65,7 @@ public class JettyHttpServerTransport extends AbstractLifecycleComponent<HttpSer
         this.port = componentSettings.get("port", settings.get("http.port", "9200-9300"));
         this.bindHost = componentSettings.get("bind_host", settings.get("http.bind_host", settings.get("http.host")));
         this.publishHost = componentSettings.get("publish_host", settings.get("http.publish_host", settings.get("http.host")));
-        this.jettyConfig = componentSettings.get("config", "jetty.xml");
+        this.jettyConfig = componentSettings.getAsArray("config", new String[]{"jetty.xml"});
         this.loggerWrapper = loggerWrapper;
         this.clusterName = clusterName;
     }
@@ -81,13 +81,18 @@ public class JettyHttpServerTransport extends AbstractLifecycleComponent<HttpSer
             @Override
             public boolean onPortNumber(int portNumber) {
                 try {
-                    URL config = environment.resolveConfig(jettyConfig);
-                    XmlConfiguration xmlConfiguration = new XmlConfiguration(config);
-                    xmlConfiguration.getProperties().putAll(jettySettings(bindHost, portNumber));
-                    Server server = (Server) xmlConfiguration.configure();
-
-                    server.setAttribute(TRANSPORT_ATTRIBUTE, JettyHttpServerTransport.this);
-
+                    Server server = null;
+                    for (String configFile : jettyConfig) {
+                        URL config = environment.resolveConfig(configFile);
+                        XmlConfiguration xmlConfiguration = new XmlConfiguration(config);
+                        xmlConfiguration.getProperties().putAll(jettySettings(bindHost, portNumber));
+                        if (server == null) {
+                            server = (Server) xmlConfiguration.configure();
+                            server.setAttribute(TRANSPORT_ATTRIBUTE, JettyHttpServerTransport.this);
+                        } else {
+                            xmlConfiguration.configure(server);
+                        }
+                    }
                     server.start();
 
                     jettyServer = server;
