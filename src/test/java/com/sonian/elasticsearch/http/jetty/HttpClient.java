@@ -17,6 +17,7 @@ package com.sonian.elasticsearch.http.jetty;
 
 import org.codehaus.jackson.map.ObjectMapper;
 import org.elasticsearch.ElasticSearchException;
+import org.elasticsearch.common.io.Streams;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.common.transport.TransportAddress;
 import sun.misc.BASE64Encoder;
@@ -119,21 +120,19 @@ public class HttpClient {
             return new HttpClientResponse(mapper.readValue(inputStream, Map.class), errorCode, null);
         } catch (IOException e) {
             InputStream errStream = urlConnection.getErrorStream();
-            BufferedReader br = new BufferedReader(new InputStreamReader(errStream));
-            StringBuilder sb = new StringBuilder();
-            String line;
+            String body = null;
             try {
-                while ((line = br.readLine()) != null) {
-                    sb.append(line);
-                }
-            } catch (IOException e1) {}
+                body = Streams.copyToString(new InputStreamReader(errStream));
+            } catch (IOException e1) {
+                throw new ElasticSearchException("ErrorStream isn't readable", e1);
+            }
             Map m = newHashMap();
-            m.put("body", sb.toString());
+            m.put("body", body);
             return new HttpClientResponse(m, errorCode, e);
         } finally {
             urlConnection.disconnect();
         }
-    }
+}
 
     @SuppressWarnings({"unchecked"})
     public HttpClientResponse request(String method, String path, Map<String, Object> data) {
