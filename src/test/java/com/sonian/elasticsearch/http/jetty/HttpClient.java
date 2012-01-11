@@ -17,15 +17,18 @@ package com.sonian.elasticsearch.http.jetty;
 
 import org.codehaus.jackson.map.ObjectMapper;
 import org.elasticsearch.ElasticSearchException;
-import org.elasticsearch.common.Base64;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.common.transport.TransportAddress;
+import sun.misc.BASE64Encoder;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.*;
+import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.InetSocketAddress;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Map;
+
+import static org.elasticsearch.common.collect.Maps.newHashMap;
 
 /**
  * @author imotov
@@ -48,26 +51,25 @@ public class HttpClient {
             throw new ElasticSearchException("", e);
         }
         if (username != null) {
+            BASE64Encoder enc = new BASE64Encoder();
             String userPassword = username + ":" + password;
-            encodedAuthorization =  Base64.encodeBytes(userPassword.getBytes());
+            encodedAuthorization = enc.encode(userPassword.getBytes());
         } else {
             encodedAuthorization = null;
         }
     }
 
-    public Map<String, Object> request(String path) {
-        return request("GET", path, null);
+    public HttpClientResponse request(String path) {
+        return request("GET", path, (byte[]) null);
 
     }
 
-    public Map<String, Object> request(String method, String path) {
-        return request(method, path, null);
+    public HttpClientResponse request(String method, String path) {
+        return request(method, path, (byte[]) null);
     }
 
-    @SuppressWarnings({"unchecked"})
-    public Map<String, Object> request(String method, String path, Map<String, Object> data) {
+    public HttpClientResponse request(String method, String path, byte[] data) {
         ObjectMapper mapper = new ObjectMapper();
-
         URL url;
         try {
             url = new URL(baseUrl, path);
@@ -96,7 +98,7 @@ public class HttpClient {
             OutputStream outputStream = null;
             try {
                 outputStream = urlConnection.getOutputStream();
-                mapper.writeValue(outputStream, data);
+                outputStream.write(data);
             } catch (IOException e) {
                 throw new ElasticSearchException("", e);
             } finally {
@@ -114,11 +116,34 @@ public class HttpClient {
         try {
             errorCode = urlConnection.getResponseCode();
             InputStream inputStream = urlConnection.getInputStream();
-            return mapper.readValue(inputStream, Map.class);
+            return new HttpClientResponse(mapper.readValue(inputStream, Map.class), errorCode, null);
         } catch (IOException e) {
-            throw new ElasticSearchException("HTTP " + errorCode, e);
+            InputStream errStream = urlConnection.getErrorStream();
+            BufferedReader br = new BufferedReader(new InputStreamReader(errStream));
+            StringBuilder sb = new StringBuilder();
+            String line;
+            try {
+                while ((line = br.readLine()) != null) {
+                    sb.append(line);
+                }
+            } catch (IOException e1) {}
+            Map m = newHashMap();
+            m.put("body", sb.toString());
+            return new HttpClientResponse(m, errorCode, e);
         } finally {
             urlConnection.disconnect();
         }
+    }
+
+    @SuppressWarnings({"unchecked"})
+    public HttpClientResponse request(String method, String path, Map<String, Object> data) {
+        ObjectMapper mapper = new ObjectMapper();
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        try {
+            mapper.writeValue(out, data);
+        } catch (IOException e) {
+            throw new ElasticSearchException("", e);
+        }
+        return request(method, path, out.toByteArray());
     }
 }
