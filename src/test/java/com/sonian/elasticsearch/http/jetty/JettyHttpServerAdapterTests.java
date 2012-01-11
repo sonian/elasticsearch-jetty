@@ -17,6 +17,7 @@ package com.sonian.elasticsearch.http.jetty;
 
 import static org.elasticsearch.common.collect.Maps.newHashMap;
 import static org.hamcrest.MatcherAssert.*;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
 import org.elasticsearch.ElasticSearchException;
@@ -25,6 +26,8 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.net.HttpURLConnection;
+import java.net.URLConnection;
 import java.util.Map;
 
 /**
@@ -45,7 +48,7 @@ public class JettyHttpServerAdapterTests extends AbstractJettyHttpServerTests {
 
     @Test
     public void testClusterHealth() throws Exception {
-        Map<String, Object> response = httpClient("server1").request("_cluster/health");
+        HttpClientResponse response = httpClient("server1").request("_cluster/health");
         assertThat(
                 (String) response.get("status"),
                 equalTo("green")
@@ -66,7 +69,7 @@ public class JettyHttpServerAdapterTests extends AbstractJettyHttpServerTests {
         ).map();
         // Create Index
 
-        Map<String, Object> response = httpClient("server1", "user", "Passw0rd").request("PUT", "testidx", settings);
+        HttpClientResponse response = httpClient("server1", "user", "Passw0rd").request("PUT", "testidx", settings);
         assertThat((Boolean) response.get("ok"), equalTo(true));
         client("server1").admin().cluster().prepareHealth().setWaitForGreenStatus().execute().actionGet();
 
@@ -93,14 +96,11 @@ public class JettyHttpServerAdapterTests extends AbstractJettyHttpServerTests {
         ).map();
         // Create Index
 
-        try {
-            httpClient("server1").request("PUT", "testidx", settings);
-            assertThat("Should throw access denied exception", false);
-        } catch (ElasticSearchException ex) {
-            assertThat(ex.getMessage(), equalTo("HTTP 401"));
-        }
+        HttpClientResponse response;
+        response = httpClient("server1").request("PUT", "testidx", settings);
+        assertThat(response.errorCode(), equalTo(HttpURLConnection.HTTP_UNAUTHORIZED));
 
-        Map<String, Object> response = httpClient("server1", "user", "Passw0rd").request("PUT", "testidx", settings);
+        response = httpClient("server1", "user", "Passw0rd").request("PUT", "testidx", settings);
         assertThat((Boolean) response.get("ok"), equalTo(true));
         client("server1").admin().cluster().prepareHealth().setWaitForGreenStatus().execute().actionGet();
 
@@ -110,15 +110,11 @@ public class JettyHttpServerAdapterTests extends AbstractJettyHttpServerTests {
         response = httpClient("server1", "user", "Passw0rd").request("PUT", "testidx/msg/1?refresh=true", data);
         assertThat((Boolean) response.get("ok"), equalTo(true));
 
-        try {
-            data = newHashMap();
-            data.put("id", "2");
-            data.put("message", "test");
-            httpClient("server1").request("PUT", "testidx/msg/2?refresh=true", data);
-            assertThat("Should throw access denied exception", false);
-        } catch (ElasticSearchException ex) {
-            assertThat(ex.getMessage(), equalTo("HTTP 401"));
-        }
+        data = newHashMap();
+        data.put("id", "2");
+        data.put("message", "test");
+        response = httpClient("server1").request("PUT", "testidx/msg/2?refresh=true", data);
+        assertThat(response.errorCode(), equalTo(HttpURLConnection.HTTP_UNAUTHORIZED));
 
         response = httpClient("server1").request("GET", "testidx/msg/_search?q=*:*");
         assertThat((Integer)((Map<String, Object>) response.get("hits")).get("total"), equalTo(1));
@@ -127,12 +123,7 @@ public class JettyHttpServerAdapterTests extends AbstractJettyHttpServerTests {
     @SuppressWarnings({"unchecked"})
     @Test
     public void testDefaultPermissions() throws Exception {
-
-        try {
-            httpClient("server1").request("POST", "_cluster/health");
-            assertThat("Should throw access denied exception", false);
-        } catch (ElasticSearchException ex) {
-            assertThat(ex.getMessage(), equalTo("HTTP 401"));
-        }
+        HttpClientResponse response = httpClient("server1").request("POST", "_cluster/health");
+        assertThat(response.errorCode(), equalTo(HttpURLConnection.HTTP_UNAUTHORIZED));
     }
 }
