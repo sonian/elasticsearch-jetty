@@ -18,6 +18,7 @@ package com.sonian.elasticsearch.http.filter.logging;
 import com.sonian.elasticsearch.http.filter.FilterHttpServerTransport;
 import com.sonian.elasticsearch.http.filter.FilterHttpServerTransportModule;
 import com.sonian.elasticsearch.http.jetty.AbstractJettyHttpServerTests;
+import com.sonian.elasticsearch.http.jetty.HttpClientResponse;
 import org.elasticsearch.common.collect.MapBuilder;
 import org.elasticsearch.common.logging.ESLogger;
 import org.elasticsearch.common.logging.ESLoggerFactory;
@@ -66,7 +67,7 @@ public class LoggingFilterHttpServerAdapterTests extends AbstractJettyHttpServer
         startNode("server1");
         createTestIndex();
         // Shouldn't log cluster health call
-        Map<String, Object> response = httpClient("server1").request("_cluster/health");
+        HttpClientResponse response = httpClient("server1").request("_cluster/health");
         assertThat((String) response.get("status"), equalTo("green"));
 
         Map<String, Object> data = createSearchQuery("user:kimchy");
@@ -101,7 +102,7 @@ public class LoggingFilterHttpServerAdapterTests extends AbstractJettyHttpServer
         createTestIndex();
 
         // Should log cluster health call
-        Map<String, Object> response = httpClient("server1").request("_cluster/health");
+        HttpClientResponse response = httpClient("server1").request("_cluster/health");
         assertThat((String) response.get("status"), equalTo("green"));
         assertThat(mockESLoggerFactory.getMessage(), startsWith("INFO:[server1] GET /_cluster/health - 200 OK"));
 

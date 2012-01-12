@@ -7,6 +7,10 @@
          id="HttpServerAdapterHandler">
     </New>
 
+    <New class="com.sonian.elasticsearch.http.jetty.error.JettyHttpServerErrorHandler"
+         id="HttpServerErrorHandler">
+    </New>
+
     <New class="org.eclipse.jetty.security.HashLoginService"
          id="DefaultLoginService">
         <Set name="name">DefaultRealm</Set>
@@ -324,6 +328,12 @@
     <Call name="addBean">
         <Arg>
             <Ref id="DefaultLoginService"/>
+        </Arg>
+    </Call>
+
+    <Call name="addBean">
+        <Arg>
+            <Ref id="HttpServerErrorHandler"/>
         </Arg>
     </Call>
 
