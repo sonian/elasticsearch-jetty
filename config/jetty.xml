@@ -7,7 +7,7 @@
          id="HttpServerAdapterHandler">
     </New>
 
-    <New class="com.sonian.elasticsearch.http.jetty.error.JettyHttpServerErrorHandler"
+    <New class="com.sonian.elasticsearch.http.jetty.handler.JettyHttpServerErrorHandler"
          id="HttpServerErrorHandler">
     </New>
 

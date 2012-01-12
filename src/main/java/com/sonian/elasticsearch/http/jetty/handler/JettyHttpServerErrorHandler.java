@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.sonian.elasticsearch.http.jetty.error;
+package com.sonian.elasticsearch.http.jetty.handler;
 
 import org.eclipse.jetty.http.MimeTypes;
 import org.eclipse.jetty.server.Dispatcher;
