@@ -124,7 +124,7 @@ public class HttpClient {
             try {
                 body = Streams.copyToString(new InputStreamReader(errStream));
             } catch (IOException e1) {
-                throw new ElasticSearchException("ErrorStream isn't readable", e1);
+                throw new ElasticSearchException("problem reading error stream", e1);
             }
             Map m = newHashMap();
             m.put("body", body);
