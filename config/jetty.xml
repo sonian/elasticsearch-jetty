@@ -361,7 +361,7 @@
             <New class="org.eclipse.jetty.server.nio.SelectChannelConnector">
                 <Set name="host"><Property name="jetty.bind_host"/></Set>
                 <Set name="port"><Property name="jetty.port"/></Set>
-                <Set name="maxIdleTime">30000</Set>
+                <Set name="maxIdleTime">600000</Set>
                 <Set name="Acceptors">2</Set>
             </New>
         </Arg>

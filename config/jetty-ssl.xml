@@ -21,7 +21,7 @@
                 </Arg>
                 <Set name="host"><Property name="jetty.ssl_bind_host"/></Set>
                 <Set name="port"><Property name="jetty.ssl_port"/></Set>
-                <Set name="maxIdleTime">30000</Set>
+                <Set name="maxIdleTime">600000</Set>
             </New>
         </Arg>
     </Call>
