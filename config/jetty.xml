@@ -116,7 +116,7 @@
                         /_count,/_mget,/_search,/_search/scroll,/_search/scroll/{scroll_id},/{index}/_count,
                         /{index}/_mget,/{index}/_search,/{index}/{type}/_count,/{index}/{type}/_mget,
                         /{index}/{type}/_percolate,/{index}/{type}/_search,/{index}/{type}/{id},
-                        /{index}/{type}/{id}/_mlt,
+                        /{index}/{type}/{id}/_mlt,/_validate/query,/{index}/_validate/query,/{index}/{type}/_validate/query
                     </Set>
                     <Set name="constraint">
                         <Ref id="ReadOnlyUserDataSecurityConstraint"/>
@@ -135,10 +135,10 @@
                     <Set name="pathSpec">
                         /_aliases,/_cluster/*,/_cluster/*/*,/_cluster/*/*/*,/_cluster/*/*/*/*,/_mapping,/_segments,
                         /_settings,/_stats,/_stats/*,/_stats/*/*,/_status,/_template/{name},/{index}/_aliases,
-                        /{index}/_analyze,/{index}/_mapping,/{index}/_ping/broadcast,/{index}/_ping/replication,
+                        /_analyze,/{index}/_analyze,/{index}/_mapping,/{index}/_ping/broadcast,/{index}/_ping/replication,
                         /{index}/_segments,/{index}/_settings,/{index}/_stats,/{index}/_stats/*,/{index}/_stats/*/*,
                         /{index}/_status,/{index}/{type}/_mapping,/{index}/{type}/{id}/_ping,
-                        /_valve/settings,/_valve/settings/{nodeId}
+                        /_valve/settings,/_valve/settings/{nodeId},/_nodes,/_nodes/*,/_nodes/*/*,/_nodes/*/*/*
                     </Set>
                     <Set name="constraint">
                         <Ref id="ReadOnlyClusterDataSecurityConstraint"/>
@@ -207,7 +207,7 @@
                 <New class="org.eclipse.jetty.security.ConstraintMapping">
                     <Set name="method">POST</Set>
                     <Set name="pathSpec">
-                        /{index}/_analyze
+                        /_analyze,/{index}/_analyze
                     </Set>
                     <Set name="constraint">
                         <Ref id="ReadOnlyClusterDataSecurityConstraint"/>
@@ -226,7 +226,8 @@
                     <Set name="pathSpec">
                         /_count,/_mget,/_search,/_search/scroll,/_search/scroll/{scroll_id},/{index}/_count,
                         /{index}/_mget,/{index}/_search,/{index}/{type}/_count,/{index}/{type}/_mget,
-                        /{index}/{type}/_percolate,/{index}/{type}/_search,/{index}/{type}/{id}/_mlt
+                        /{index}/{type}/_percolate,/{index}/{type}/_search,/{index}/{type}/{id}/_mlt,
+                        /_validate/query,/{index}/_validate/query,/{index}/{type}/_validate/query
                     </Set>
                     <Set name="constraint">
                         <Ref id="ReadOnlyUserDataSecurityConstraint"/>
@@ -247,7 +248,7 @@
                         /_template/{name},/{index},/{index}/_cache/clear,/{index}/_close,/{index}/_flush,
                         /{index}/_gateway/snapshot,/{index}/_mapping,/{index}/_open,/{index}/_optimize,
                         /{index}/_refresh,/{index}/{type},/{index}/{type}/_mapping,/{index}/{type}/{id},
-                        /{index}/{type}/{id}/_create,/{index}/_bulk,/{index}/{type}/_bulk
+                        /{index}/{type}/{id}/_create,/{index}/_bulk,/{index}/{type}/_bulk,/{index}/{type}/{id}/_update
                     </Set>
                     <Set name="constraint">
                         <Ref id="ReadWriteSecurityConstraint"/>
