@@ -6,7 +6,7 @@ apply plugin: 'idea'
 
 sourceCompatibility = '1.6'
 targetCompatibility = '1.6'
-version = '0.18.6'
+version = '0.18.7-SNAPSHOT'
 elasticSearchVerstion = '0.18.5'
 jettyVersion = '7.4.5.v20110725'
 group = 'com.sonian'
