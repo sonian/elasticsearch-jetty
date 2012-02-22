@@ -21,7 +21,8 @@ import org.elasticsearch.rest.support.RestUtils;
 import java.util.*;
 
 /**
- * @author imotov
+ * This implementation is based on org.eclipse.jetty.http.PathMap but it
+ * is using ElasticSearch path specification instead of servlet spec.
  */
 public class RestPathMap<T> extends HashMap<String, T> {
 
