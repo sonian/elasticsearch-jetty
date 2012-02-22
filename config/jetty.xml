@@ -138,7 +138,7 @@
                         /_analyze,/{index}/_analyze,/{index}/_mapping,/{index}/_ping/broadcast,/{index}/_ping/replication,
                         /{index}/_segments,/{index}/_settings,/{index}/_stats,/{index}/_stats/*,/{index}/_stats/*/*,
                         /{index}/_status,/{index}/{type}/_mapping,/{index}/{type}/{id}/_ping,
-                        /_valve/settings,/_valve/settings/{nodeId},/_nodes,/_nodes/*,/_nodes/*/*,/_nodes/*/*/*
+                        /_nodes,/_nodes/*,/_nodes/*/*,/_nodes/*/*/*
                     </Set>
                     <Set name="constraint">
                         <Ref id="ReadOnlyClusterDataSecurityConstraint"/>
@@ -267,8 +267,7 @@
                     <Set name="pathSpec">
                         /_cluster/nodes/_restart,/_cluster/nodes/_shutdown,
                         /_cluster/nodes/{nodeId}/_restart,/_cluster/nodes/{nodeId}/_shutdown,
-                        /_shutdown,/_cluster/reroute,
-                        /_valve/settings,/_valve/settings/{nodeId}
+                        /_shutdown,/_cluster/reroute
                     </Set>
                     <Set name="constraint">
                         <Ref id="AdminSecurityConstraint"/>
@@ -303,8 +302,7 @@
                 <New class="org.eclipse.jetty.security.ConstraintMapping">
                     <Set name="method">PUT</Set>
                     <Set name="pathSpec">
-                        /_cluster/settings,/_settings,
-                        /_valve/settings,/_valve/settings/{nodeId}
+                        /_cluster/settings,/_settings
                     </Set>
                     <Set name="constraint">
                         <Ref id="AdminSecurityConstraint"/>
