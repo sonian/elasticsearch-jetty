@@ -1,5 +1,14 @@
 h1. Jetty Plugin
 
+h2. Compatibility
+
+The following table shows the versions of elasticsearch and jetty that Jetty Plugin was built with. 
+
+|_. Jetty Plugin |_.  Elasticsearch    |_.  Jetty  |
+| master        | 0.19.2.RC2   | 7.4.5.v20110725   |
+| 0.18.1-0.18.6   | 0.18.5  | 7.4.5.v20110725   |
+| 0.18.0   | 0.18.4   | 7.4.5.v20110725   |
+
 h2. Overview
 
 Jetty plugin consists of two modules that can be used independently: JettyHttpServerTransport and FilterHttpTransportModule.
@@ -26,4 +35,3 @@ Jetty plugin exposes several ES settings as Jetty properties that can be used in
 * @jetty.bing_host@ - Http bind host, if the setting @sonian.elasticsearch.http.jetty.bind_host@ is not specified, ElasticSearch will try to use values specified in @http.bind_host@ and @http.host@ settings.
 * @jetty.port@ - Http port, if the setting @sonian.elasticsearch.http.jetty.port@ is not specified, ElasticSearch will try to use http.port or default to 9200-9300. If port is specified in form of the range, ElasticSearch will try to start Jetty with each individual port number iterating through the range.
 * @jetty.*@ - all other settings specified in @sonian.elasticsearch.http.jetty.@ are exposed as Jetty properties. For example, the setting @sonian.elasticsearch.http.jetty.foo@ can be referred to in Jetty configuration as *<Property name="jetty.foo"/>*.
-
