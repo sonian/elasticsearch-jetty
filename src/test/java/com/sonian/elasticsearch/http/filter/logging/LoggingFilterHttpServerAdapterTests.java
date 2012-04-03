@@ -59,7 +59,7 @@ public class LoggingFilterHttpServerAdapterTests extends AbstractJettyHttpServer
     @AfterMethod
     public void closeNodes() {
         closeAllNodes();
-        ESLoggerFactory.setDefaultFactory(mockESLoggerFactory.realFactory);
+        ESLoggerFactory.setDefaultFactory(mockESLoggerFactory.getRealFactory());
     }
 
     @Test
@@ -115,81 +115,4 @@ public class LoggingFilterHttpServerAdapterTests extends AbstractJettyHttpServer
         assertThat(logMessage, not(containsString("user:kimchy")));
     }
 
-    private Map<String, Object> createSearchQuery(String queryString) {
-        return MapBuilder.<String, Object>newMapBuilder()
-                .put("query", MapBuilder.newMapBuilder()
-                        .put("query_string", MapBuilder.newMapBuilder()
-                                .put("query", queryString)
-                                .immutableMap()
-                        ).immutableMap()
-                ).immutableMap();
-    }
-
-    private class QueueMessageCollector implements CollectingESLogger.LogMessageCollector {
-        private LinkedBlockingQueue<String> messages = new LinkedBlockingQueue<String>();
-
-        public void log(String message) {
-            try {
-                messages.put(message);
-            } catch (InterruptedException ex) {
-                // Ignore
-            }
-        }
-
-        public String getMessage(int timeout, TimeUnit unit) throws InterruptedException{
-            return messages.poll(timeout, unit);
-        }
-
-    }
-
-    private class MockESLoggerFactory extends ESLoggerFactory {
-        private final ESLoggerFactory realFactory = new Log4jESLoggerFactory();
-
-        private final QueueMessageCollector messageCollector = new QueueMessageCollector();
-
-        private final String level;
-
-        private final String suffix;
-
-        public MockESLoggerFactory(String level, String suffix) {
-            this.level = level;
-            this.suffix = suffix;
-        }
-
-        @Override
-        protected ESLogger newInstance(String prefix, String name) {
-            if (name.endsWith(suffix)) {
-                logger.info("Asked for Logger " + prefix + ":" + name);
-                return new CollectingESLogger(level, messageCollector, prefix, name);
-            }
-            return realFactory.newInstance(name);
-        }
-
-        public String getMessage(int timeout, TimeUnit unit) {
-            try {
-                return messageCollector.getMessage(timeout, unit);
-            } catch (InterruptedException ex) {
-                return null;
-            }
-        }
-
-        public String getMessage() {
-            return getMessage(1, TimeUnit.SECONDS);
-        }
-    }
-
-    private void createTestIndex() {
-        try {
-            client("server1").admin().indices().prepareDelete("test").execute().actionGet();
-        } catch (Exception e) {
-            // ignore
-        }
-        client("server1").admin().indices().prepareCreate("test")
-                .setSettings(
-                        ImmutableSettings.settingsBuilder()
-                                .put("number_of_shards", 1)
-                                .put("number_of_replicas", 0))
-                .execute().actionGet();
-        client("server1").admin().cluster().prepareHealth().setWaitForGreenStatus().execute().actionGet();
-    }
 }

@@ -40,11 +40,15 @@ public class LoggingFilterHttpServerAdapter implements FilterHttpServerAdapter {
 
     private final RequestLoggingLevelSettings requestLoggingLevelSettings;
 
+    private final String logFormat;
+
     @Inject
     public LoggingFilterHttpServerAdapter(Settings settings, @Assisted String name, @Assisted Settings filterSettings, RequestLoggingLevelSettings requestLoggingLevelSettings) {
-        this.logger = Loggers.getLogger(Classes.getPackageName(getClass()), settings);
+        String loggerName = filterSettings.get("logger", Classes.getPackageName(getClass()));
+        this.logger = Loggers.getLogger(loggerName, settings);
         this.requestLoggingLevelSettings = requestLoggingLevelSettings;
         requestLoggingLevelSettings.updateSettings(filterSettings);
+        this.logFormat = filterSettings.get("format", "text");
     }
 
     public RequestLoggingLevelSettings requestLoggingLevelSettings() {

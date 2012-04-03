@@ -17,6 +17,7 @@ package com.sonian.elasticsearch.http.jetty;
 
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.common.collect.MapBuilder;
 import org.elasticsearch.common.logging.ESLogger;
 import org.elasticsearch.common.logging.Loggers;
 import org.elasticsearch.common.network.NetworkUtils;
@@ -155,4 +156,28 @@ public class AbstractJettyHttpServerTests {
         return ((InternalNode) node(id)).injector().getInstance(HttpServerTransport.class);
     }
 
+    public Map<String, Object> createSearchQuery(String queryString) {
+        return MapBuilder.<String, Object>newMapBuilder()
+                .put("query", MapBuilder.newMapBuilder()
+                        .put("query_string", MapBuilder.newMapBuilder()
+                                .put("query", queryString)
+                                .immutableMap()
+                        ).immutableMap()
+                ).immutableMap();
+    }
+
+    public void createTestIndex() {
+        try {
+            client("server1").admin().indices().prepareDelete("test").execute().actionGet();
+        } catch (Exception e) {
+            // ignore
+        }
+        client("server1").admin().indices().prepareCreate("test")
+                .setSettings(
+                        ImmutableSettings.settingsBuilder()
+                                .put("number_of_shards", 1)
+                                .put("number_of_replicas", 0))
+                .execute().actionGet();
+        client("server1").admin().cluster().prepareHealth().setWaitForGreenStatus().execute().actionGet();
+    }
 }
