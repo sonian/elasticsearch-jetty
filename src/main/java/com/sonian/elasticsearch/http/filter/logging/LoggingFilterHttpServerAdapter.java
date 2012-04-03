@@ -20,9 +20,12 @@ import com.sonian.elasticsearch.http.filter.FilterHttpServerAdapter;
 import org.elasticsearch.common.Classes;
 import org.elasticsearch.common.inject.Inject;
 import org.elasticsearch.common.inject.assistedinject.Assisted;
+import org.elasticsearch.common.joda.time.DateTime;
 import org.elasticsearch.common.logging.ESLogger;
 import org.elasticsearch.common.logging.Loggers;
 import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.common.xcontent.XContentBuilder;
+import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.http.HttpChannel;
 import org.elasticsearch.http.HttpRequest;
 import org.elasticsearch.rest.RestResponse;
@@ -59,7 +62,7 @@ public class LoggingFilterHttpServerAdapter implements FilterHttpServerAdapter {
     public void doFilter(HttpRequest request, HttpChannel channel, FilterChain filterChain) {
         RequestLoggingLevel level = requestLoggingLevelSettings.getLoggingLevel(request.method(), request.path());
         if (level.shouldLog(logger)) {
-            filterChain.doFilter(request, new LoggingHttpChannel(request, channel, level.logBody()));
+            filterChain.doFilter(request, new LoggingHttpChannel(request, channel, this.logFormat, level.logBody()));
         } else {
             filterChain.doFilter(request, channel);
         }
@@ -100,10 +103,13 @@ public class LoggingFilterHttpServerAdapter implements FilterHttpServerAdapter {
 
         private final long timestamp;
 
+        private final String format;
+
         private final String content;
 
-        public LoggingHttpChannel(HttpRequest request, HttpChannel channel, boolean logBody) {
+        public LoggingHttpChannel(HttpRequest request, HttpChannel channel, String format, boolean logBody) {
             this.channel = channel;
+            this.format = format;
             method = request.method().name();
             path = request.rawPath();
             params = mapToString(request.params());
@@ -115,17 +121,7 @@ public class LoggingFilterHttpServerAdapter implements FilterHttpServerAdapter {
             }
         }
 
-
-        @Override
-        public void sendResponse(RestResponse response) {
-            int contentLength = -1;
-            try {
-                contentLength = response.contentLength();
-            } catch (IOException ex) {
-                // Ignore
-            }
-            channel.sendResponse(response);
-            long latency = System.currentTimeMillis() - timestamp;
+        public void logText(RestResponse response, long contentLength, long latency) {
             if(content != null) {
                 logger.info("{} {} {} {} {} {} {} [{}]",
                         method,
@@ -146,7 +142,60 @@ public class LoggingFilterHttpServerAdapter implements FilterHttpServerAdapter {
                         contentLength >= 0 ? contentLength : "-",
                         latency);
             }
+
+        }
+
+        public void logJson(RestResponse response, long contentLength, long latency) {
+            DateTime now = new DateTime();
+            try {
+                XContentBuilder json = XContentFactory.jsonBuilder().startObject();
+                json.field("time", now.toDateTimeISO().toString());
+                json.field("method", method);
+                json.field("path", path);
+                json.field("querystr", params);
+                json.field("code", response.status().getStatus());
+                json.field("status", response.status());
+                json.field("size", contentLength);
+                json.field("duration", latency);
+                json.field("year", now.toString("yyyy"));
+                json.field("month", now.toString("MM"));
+                json.field("day", now.toString("dd"));
+                json.field("hour", now.toString("HH"));
+                json.field("minute", now.toString("mm"));
+                json.field("dow", now.toString("EEE"));
+                json.field("data", content);
+                json.endObject();
+                logger.info(json.string());
+            } catch (IOException e) {
+                logger.info("## Could not serialize to json: {} {} {} {} {} {} {} {} [{}]",
+                        now.toDateTimeISO().toString(),
+                        method,
+                        path,
+                        params,
+                        response.status().getStatus(),
+                        response.status(),
+                        contentLength >= 0 ? contentLength : "-",
+                        latency,
+                        content);
+            }
+        }
+
+        @Override
+        public void sendResponse(RestResponse response) {
+            int contentLength = -1;
+            try {
+                contentLength = response.contentLength();
+            } catch (IOException ex) {
+                // Ignore
+            }
+            channel.sendResponse(response);
+            long latency = System.currentTimeMillis() - timestamp;
+
+            if (this.format.equals("json")) {
+                logJson(response, contentLength, latency);
+            } else {
+                logText(response, contentLength, latency);
+            }
         }
     }
-
 }
