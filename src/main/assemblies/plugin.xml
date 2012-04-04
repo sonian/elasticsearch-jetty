@@ -12,6 +12,7 @@
             <useTransitiveFiltering>true</useTransitiveFiltering>
             <excludes>
                 <exclude>org.elasticsearch:elasticsearch</exclude>
+                <exclude>log4j:log4j</exclude>
             </excludes>
         </dependencySet>
         <dependencySet>
