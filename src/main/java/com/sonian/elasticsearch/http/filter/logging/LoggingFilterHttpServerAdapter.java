@@ -162,10 +162,10 @@ public class LoggingFilterHttpServerAdapter implements FilterHttpServerAdapter {
                 XContentBuilder json = XContentFactory.jsonBuilder().startObject();
                 json.field("time", now.toDateTimeISO().toString());
                 json.field("starttime", start.toDateTimeISO().toString());
-                json.field("local_addr", req.localAddr());
-                json.field("local_port", req.localPort());
-                json.field("remote_addr", req.remoteAddr());
-                json.field("remote_port", req.remotePort());
+                json.field("localaddr", req.localAddr());
+                json.field("localport", req.localPort());
+                json.field("remoteaddr", req.remoteAddr());
+                json.field("remoteport", req.remotePort());
                 json.field("scheme", req.scheme());
                 json.field("method", method);
                 json.field("path", path);
@@ -184,7 +184,7 @@ public class LoggingFilterHttpServerAdapter implements FilterHttpServerAdapter {
                     json.field("user", req.remoteUser());
                 }
                 if (req.opaqueId() != null) {
-                    json.field("opaque_id", req.opaqueId());
+                    json.field("opaque-id", req.opaqueId());
                 }
                 if (content != null) {
                     json.field("data", content);
