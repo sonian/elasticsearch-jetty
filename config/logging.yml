@@ -22,6 +22,7 @@ logger:
 # --------------------------------------------------------------------------------------------
 additivity:
   com.sonian.elasticsearch.http.filter.logging: false
+  com.sonian.elasticsearch.http.filter.jsonlog: false
 # --------------------------------------------------------------------------------------------
 
 appender:
@@ -60,7 +61,7 @@ appender:
 
   requestjson:
     type: dailyRollingFile
-    file: ${path.logs}/${cluster.name}-request.log
+    file: ${path.logs}/${cluster.name}-request.json.log
     datePattern: "'.'yyyy-MM-dd"
     layout:
       type: pattern
