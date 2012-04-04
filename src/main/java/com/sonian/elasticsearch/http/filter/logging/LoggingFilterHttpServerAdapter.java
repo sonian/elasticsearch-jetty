@@ -183,7 +183,9 @@ public class LoggingFilterHttpServerAdapter implements FilterHttpServerAdapter {
                 json.field("hour", now.toString("HH"));
                 json.field("minute", now.toString("mm"));
                 json.field("dow", now.toString("EEE"));
-                json.field("data", content);
+                if (content != null) {
+                    json.field("data", content);
+                }
                 json.endObject();
                 logger.info(json.string());
             } catch (IOException e) {
