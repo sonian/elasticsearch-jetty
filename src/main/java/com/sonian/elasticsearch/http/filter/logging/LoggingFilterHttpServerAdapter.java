@@ -166,7 +166,9 @@ public class LoggingFilterHttpServerAdapter implements FilterHttpServerAdapter {
                 json.field("local_port", req.localPort());
                 json.field("remote_addr", req.remoteAddr());
                 json.field("remote_port", req.remotePort());
-                json.field("user", req.remoteUser());
+                if (req.remoteUser() != null) {
+                    json.field("user", req.remoteUser());
+                }
                 json.field("scheme", req.scheme());
                 json.field("content_type", req.contentType());
                 json.field("method", method);
