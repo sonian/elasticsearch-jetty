@@ -49,10 +49,15 @@ public class LoggingFilterHttpServerAdapter implements FilterHttpServerAdapter {
     @Inject
     public LoggingFilterHttpServerAdapter(Settings settings, @Assisted String name, @Assisted Settings filterSettings, RequestLoggingLevelSettings requestLoggingLevelSettings) {
         String loggerName = filterSettings.get("logger", Classes.getPackageName(getClass()));
-        this.logger = Loggers.getLogger(loggerName, settings);
+        this.logFormat = filterSettings.get("format", "text");
+        if (logFormat.equals("json")) {
+            this.logger = Loggers.getLogger(loggerName);
+        } else {
+            this.logger = Loggers.getLogger(loggerName, settings);
+        }
+
         this.requestLoggingLevelSettings = requestLoggingLevelSettings;
         requestLoggingLevelSettings.updateSettings(filterSettings);
-        this.logFormat = filterSettings.get("format", "text");
     }
 
     public RequestLoggingLevelSettings requestLoggingLevelSettings() {
