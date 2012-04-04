@@ -166,9 +166,6 @@ public class LoggingFilterHttpServerAdapter implements FilterHttpServerAdapter {
                 json.field("local_port", req.localPort());
                 json.field("remote_addr", req.remoteAddr());
                 json.field("remote_port", req.remotePort());
-                if (req.remoteUser() != null) {
-                    json.field("user", req.remoteUser());
-                }
                 json.field("scheme", req.scheme());
                 json.field("method", method);
                 json.field("path", path);
@@ -183,6 +180,9 @@ public class LoggingFilterHttpServerAdapter implements FilterHttpServerAdapter {
                 json.field("hour", now.toString("HH"));
                 json.field("minute", now.toString("mm"));
                 json.field("dow", now.toString("EEE"));
+                if (req.remoteUser() != null) {
+                    json.field("user", req.remoteUser());
+                }
                 if (content != null) {
                     json.field("data", content);
                 }
