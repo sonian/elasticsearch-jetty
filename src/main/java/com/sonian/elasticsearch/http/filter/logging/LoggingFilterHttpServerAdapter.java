@@ -183,6 +183,9 @@ public class LoggingFilterHttpServerAdapter implements FilterHttpServerAdapter {
                 if (req.remoteUser() != null) {
                     json.field("user", req.remoteUser());
                 }
+                if (req.opaqueId() != null) {
+                    json.field("opaque_id", req.opaqueId());
+                }
                 if (content != null) {
                     json.field("data", content);
                 }
