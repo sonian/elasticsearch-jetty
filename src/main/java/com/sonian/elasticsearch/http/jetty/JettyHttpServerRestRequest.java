@@ -124,4 +124,32 @@ public class JettyHttpServerRestRequest extends AbstractRestRequest implements H
         }
         return value;
     }
+
+    public String localAddr() {
+        return this.request.getLocalAddr();
+    }
+
+    public long localPort() {
+        return this.request.getLocalPort();
+    }
+
+    public String remoteAddr() {
+        return this.request.getRemoteAddr();
+    }
+
+    public long remotePort() {
+        return this.request.getRemotePort();
+    }
+    
+    public String remoteUser() {
+        return this.request.getRemoteUser();
+    }
+    
+    public String scheme() {
+        return this.request.getScheme();
+    }
+    
+    public String contentType() {
+        return this.request.getContentType();
+    }
 }

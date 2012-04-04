@@ -17,6 +17,7 @@ package com.sonian.elasticsearch.http.filter.logging;
 
 import com.sonian.elasticsearch.http.filter.FilterChain;
 import com.sonian.elasticsearch.http.filter.FilterHttpServerAdapter;
+import com.sonian.elasticsearch.http.jetty.JettyHttpServerRestRequest;
 import org.elasticsearch.common.Classes;
 import org.elasticsearch.common.inject.Inject;
 import org.elasticsearch.common.inject.assistedinject.Assisted;
@@ -93,6 +94,8 @@ public class LoggingFilterHttpServerAdapter implements FilterHttpServerAdapter {
     }
 
     private class LoggingHttpChannel implements HttpChannel {
+        private final HttpRequest request;
+        
         private final HttpChannel channel;
 
         private final String method;
@@ -109,6 +112,7 @@ public class LoggingFilterHttpServerAdapter implements FilterHttpServerAdapter {
 
         public LoggingHttpChannel(HttpRequest request, HttpChannel channel, String format, boolean logBody) {
             this.channel = channel;
+            this.request = request;
             this.format = format;
             method = request.method().name();
             path = request.rawPath();
@@ -147,9 +151,19 @@ public class LoggingFilterHttpServerAdapter implements FilterHttpServerAdapter {
 
         public void logJson(RestResponse response, long contentLength, long latency) {
             DateTime now = new DateTime();
+            DateTime start = new DateTime(timestamp);
+            JettyHttpServerRestRequest req = (JettyHttpServerRestRequest) request;
             try {
                 XContentBuilder json = XContentFactory.jsonBuilder().startObject();
                 json.field("time", now.toDateTimeISO().toString());
+                json.field("starttime", start.toDateTimeISO().toString());
+                json.field("local_addr", req.localAddr());
+                json.field("local_port", req.localPort());
+                json.field("remote_addr", req.remoteAddr());
+                json.field("remote_port", req.remotePort());
+                json.field("user", req.remoteUser());
+                json.field("scheme", req.scheme());
+                json.field("content_type", req.contentType());
                 json.field("method", method);
                 json.field("path", path);
                 json.field("querystr", params);
