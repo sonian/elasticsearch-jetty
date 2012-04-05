@@ -70,7 +70,7 @@ public class JsonLoggingFilterHttpServerAdapterTests extends AbstractJettyHttpSe
         httpClient("server1").request("POST", "_search", data);
         // Should start with logging for the POST /_search request
         Map<String, Object> logJson = XContentFactory.xContent(XContentType.JSON)
-                .createParser(mockESLoggerFactory.getMessage().substring(15)).mapAndClose();
+                .createParser(mockESLoggerFactory.getMessage().substring(5)).mapAndClose();
         assertThat((Integer) logJson.get("size"), greaterThan(100));
         assertThat((String) logJson.get("data"), equalTo("{\"query\":{\"query_string\":{\"query\":\"user:kimchy\"}}}"));
     }
