@@ -130,7 +130,8 @@ public class LoggingFilterHttpServerAdapter implements FilterHttpServerAdapter {
             }
         }
 
-        public void logText(RestResponse response, long contentLength, long latency) {
+        public void logText(RestResponse response, long contentLength, long now) {
+            long latency = now - timestamp;
             if(content != null) {
                 logger.info("{} {} {} {} {} {} {} [{}]",
                         method,
@@ -151,17 +152,17 @@ public class LoggingFilterHttpServerAdapter implements FilterHttpServerAdapter {
                         contentLength >= 0 ? contentLength : "-",
                         latency);
             }
-
         }
 
-        public void logJson(RestResponse response, long contentLength, long latency) {
-            DateTime now = new DateTime();
-            DateTime start = new DateTime(timestamp);
+        public void logJson(RestResponse response, long contentLength, long now) {
+            long latency = now - timestamp;
+            DateTime nowdt = new DateTime(now);
+            DateTime startdt = new DateTime(timestamp);
             JettyHttpServerRestRequest req = (JettyHttpServerRestRequest) request;
             try {
                 XContentBuilder json = XContentFactory.jsonBuilder().startObject();
-                json.field("time", now.toDateTimeISO().toString());
-                json.field("starttime", start.toDateTimeISO().toString());
+                json.field("time", nowdt.toDateTimeISO().toString());
+                json.field("starttime", startdt.toDateTimeISO().toString());
                 json.field("localaddr", req.localAddr());
                 json.field("localport", req.localPort());
                 json.field("remoteaddr", req.remoteAddr());
@@ -174,12 +175,12 @@ public class LoggingFilterHttpServerAdapter implements FilterHttpServerAdapter {
                 json.field("status", response.status());
                 json.field("size", contentLength);
                 json.field("duration", latency);
-                json.field("year", now.toString("yyyy"));
-                json.field("month", now.toString("MM"));
-                json.field("day", now.toString("dd"));
-                json.field("hour", now.toString("HH"));
-                json.field("minute", now.toString("mm"));
-                json.field("dow", now.toString("EEE"));
+                json.field("year", nowdt.toString("yyyy"));
+                json.field("month", nowdt.toString("MM"));
+                json.field("day", nowdt.toString("dd"));
+                json.field("hour", nowdt.toString("HH"));
+                json.field("minute", nowdt.toString("mm"));
+                json.field("dow", nowdt.toString("EEE"));
                 if (req.remoteUser() != null) {
                     json.field("user", req.remoteUser());
                 }
@@ -193,7 +194,7 @@ public class LoggingFilterHttpServerAdapter implements FilterHttpServerAdapter {
                 logger.info(json.string());
             } catch (IOException e) {
                 logger.info("## Could not serialize to json: {} {} {} {} {} {} {} {} [{}]",
-                        now.toDateTimeISO().toString(),
+                        nowdt.toDateTimeISO().toString(),
                         method,
                         path,
                         params,
@@ -214,12 +215,12 @@ public class LoggingFilterHttpServerAdapter implements FilterHttpServerAdapter {
                 // Ignore
             }
             channel.sendResponse(response);
-            long latency = System.currentTimeMillis() - timestamp;
+            long now = System.currentTimeMillis();
 
             if (this.format.equals("json")) {
-                logJson(response, contentLength, latency);
+                logJson(response, contentLength, now);
             } else {
-                logText(response, contentLength, latency);
+                logText(response, contentLength, now);
             }
         }
     }
