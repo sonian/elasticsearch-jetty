@@ -17,12 +17,16 @@ package com.sonian.elasticsearch.http.filter.logging;
 
 import com.sonian.elasticsearch.http.filter.FilterChain;
 import com.sonian.elasticsearch.http.filter.FilterHttpServerAdapter;
+import com.sonian.elasticsearch.http.jetty.JettyHttpServerRestRequest;
 import org.elasticsearch.common.Classes;
 import org.elasticsearch.common.inject.Inject;
 import org.elasticsearch.common.inject.assistedinject.Assisted;
+import org.elasticsearch.common.joda.time.DateTime;
 import org.elasticsearch.common.logging.ESLogger;
 import org.elasticsearch.common.logging.Loggers;
 import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.common.xcontent.XContentBuilder;
+import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.http.HttpChannel;
 import org.elasticsearch.http.HttpRequest;
 import org.elasticsearch.rest.RestResponse;
@@ -40,9 +44,18 @@ public class LoggingFilterHttpServerAdapter implements FilterHttpServerAdapter {
 
     private final RequestLoggingLevelSettings requestLoggingLevelSettings;
 
+    private final String logFormat;
+
     @Inject
     public LoggingFilterHttpServerAdapter(Settings settings, @Assisted String name, @Assisted Settings filterSettings, RequestLoggingLevelSettings requestLoggingLevelSettings) {
-        this.logger = Loggers.getLogger(Classes.getPackageName(getClass()), settings);
+        String loggerName = filterSettings.get("logger", Classes.getPackageName(getClass()));
+        this.logFormat = filterSettings.get("format", "text");
+        if (logFormat.equals("json")) {
+            this.logger = Loggers.getLogger(loggerName);
+        } else {
+            this.logger = Loggers.getLogger(loggerName, settings);
+        }
+
         this.requestLoggingLevelSettings = requestLoggingLevelSettings;
         requestLoggingLevelSettings.updateSettings(filterSettings);
     }
@@ -55,7 +68,7 @@ public class LoggingFilterHttpServerAdapter implements FilterHttpServerAdapter {
     public void doFilter(HttpRequest request, HttpChannel channel, FilterChain filterChain) {
         RequestLoggingLevel level = requestLoggingLevelSettings.getLoggingLevel(request.method(), request.path());
         if (level.shouldLog(logger)) {
-            filterChain.doFilter(request, new LoggingHttpChannel(request, channel, level.logBody()));
+            filterChain.doFilter(request, new LoggingHttpChannel(request, channel, this.logFormat, level.logBody()));
         } else {
             filterChain.doFilter(request, channel);
         }
@@ -86,6 +99,8 @@ public class LoggingFilterHttpServerAdapter implements FilterHttpServerAdapter {
     }
 
     private class LoggingHttpChannel implements HttpChannel {
+        private final HttpRequest request;
+        
         private final HttpChannel channel;
 
         private final String method;
@@ -96,10 +111,14 @@ public class LoggingFilterHttpServerAdapter implements FilterHttpServerAdapter {
 
         private final long timestamp;
 
+        private final String format;
+
         private final String content;
 
-        public LoggingHttpChannel(HttpRequest request, HttpChannel channel, boolean logBody) {
+        public LoggingHttpChannel(HttpRequest request, HttpChannel channel, String format, boolean logBody) {
             this.channel = channel;
+            this.request = request;
+            this.format = format;
             method = request.method().name();
             path = request.rawPath();
             params = mapToString(request.params());
@@ -111,17 +130,8 @@ public class LoggingFilterHttpServerAdapter implements FilterHttpServerAdapter {
             }
         }
 
-
-        @Override
-        public void sendResponse(RestResponse response) {
-            int contentLength = -1;
-            try {
-                contentLength = response.contentLength();
-            } catch (IOException ex) {
-                // Ignore
-            }
-            channel.sendResponse(response);
-            long latency = System.currentTimeMillis() - timestamp;
+        public void logText(RestResponse response, long contentLength, long now) {
+            long latency = now - timestamp;
             if(content != null) {
                 logger.info("{} {} {} {} {} {} {} [{}]",
                         method,
@@ -143,6 +153,75 @@ public class LoggingFilterHttpServerAdapter implements FilterHttpServerAdapter {
                         latency);
             }
         }
-    }
 
+        public void logJson(RestResponse response, long contentLength, long now) {
+            long latency = now - timestamp;
+            DateTime nowdt = new DateTime(now);
+            DateTime startdt = new DateTime(timestamp);
+            JettyHttpServerRestRequest req = (JettyHttpServerRestRequest) request;
+            try {
+                XContentBuilder json = XContentFactory.jsonBuilder().startObject();
+                json.field("time", nowdt.toDateTimeISO().toString());
+                json.field("starttime", startdt.toDateTimeISO().toString());
+                json.field("localaddr", req.localAddr());
+                json.field("localport", req.localPort());
+                json.field("remoteaddr", req.remoteAddr());
+                json.field("remoteport", req.remotePort());
+                json.field("scheme", req.scheme());
+                json.field("method", method);
+                json.field("path", path);
+                json.field("querystr", params);
+                json.field("code", response.status().getStatus());
+                json.field("status", response.status());
+                json.field("size", contentLength);
+                json.field("duration", latency);
+                json.field("year", nowdt.toString("yyyy"));
+                json.field("month", nowdt.toString("MM"));
+                json.field("day", nowdt.toString("dd"));
+                json.field("hour", nowdt.toString("HH"));
+                json.field("minute", nowdt.toString("mm"));
+                json.field("dow", nowdt.toString("EEE"));
+                if (req.remoteUser() != null) {
+                    json.field("user", req.remoteUser());
+                }
+                if (req.opaqueId() != null) {
+                    json.field("opaque-id", req.opaqueId());
+                }
+                if (content != null) {
+                    json.field("data", content);
+                }
+                json.endObject();
+                logger.info(json.string());
+            } catch (IOException e) {
+                logger.info("## Could not serialize to json: {} {} {} {} {} {} {} {} [{}]",
+                        nowdt.toDateTimeISO().toString(),
+                        method,
+                        path,
+                        params,
+                        response.status().getStatus(),
+                        response.status(),
+                        contentLength >= 0 ? contentLength : "-",
+                        latency,
+                        content);
+            }
+        }
+
+        @Override
+        public void sendResponse(RestResponse response) {
+            int contentLength = -1;
+            try {
+                contentLength = response.contentLength();
+            } catch (IOException ex) {
+                // Ignore
+            }
+            channel.sendResponse(response);
+            long now = System.currentTimeMillis();
+
+            if (this.format.equals("json")) {
+                logJson(response, contentLength, now);
+            } else {
+                logText(response, contentLength, now);
+            }
+        }
+    }
 }

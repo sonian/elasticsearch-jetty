@@ -14,6 +14,7 @@ logger:
   # Specify special logger for request logger
   # ------------------------------------------------------------------------------------------
   com.sonian.elasticsearch.http.filter.logging: INFO, request
+  com.sonian.elasticsearch.http.filter.jsonlog: INFO, requestjson
   # ------------------------------------------------
 
 # --------------------------------------------------------------------------------------------
@@ -21,6 +22,7 @@ logger:
 # --------------------------------------------------------------------------------------------
 additivity:
   com.sonian.elasticsearch.http.filter.logging: false
+  com.sonian.elasticsearch.http.filter.jsonlog: false
 # --------------------------------------------------------------------------------------------
 
 appender:
@@ -56,4 +58,12 @@ appender:
     layout:
       type: pattern
       conversionPattern: "[%d{ABSOLUTE}] %m%n"
+
+  requestjson:
+    type: dailyRollingFile
+    file: ${path.logs}/${cluster.name}-request.json.log
+    datePattern: "'.'yyyy-MM-dd"
+    layout:
+      type: pattern
+      conversionPattern: "%m%n"
   # ------------------------------------------------------------------------------------------

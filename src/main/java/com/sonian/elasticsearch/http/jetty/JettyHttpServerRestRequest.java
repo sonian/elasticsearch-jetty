@@ -40,9 +40,12 @@ public class JettyHttpServerRestRequest extends AbstractRestRequest implements H
     private final Map<String, String> params;
 
     private final byte[] content;
+    
+    private final String opaqueId;
 
     public JettyHttpServerRestRequest(HttpServletRequest request) throws IOException {
         this.request = request;
+        this.opaqueId = request.getHeader("X-Opaque-Id");
         this.method = Method.valueOf(request.getMethod());
         this.params = new HashMap<String, String>();
 
@@ -123,5 +126,37 @@ public class JettyHttpServerRestRequest extends AbstractRestRequest implements H
             return defaultValue;
         }
         return value;
+    }
+
+    public String localAddr() {
+        return this.request.getLocalAddr();
+    }
+
+    public long localPort() {
+        return this.request.getLocalPort();
+    }
+
+    public String remoteAddr() {
+        return this.request.getRemoteAddr();
+    }
+
+    public long remotePort() {
+        return this.request.getRemotePort();
+    }
+    
+    public String remoteUser() {
+        return this.request.getRemoteUser();
+    }
+    
+    public String scheme() {
+        return this.request.getScheme();
+    }
+    
+    public String contentType() {
+        return this.request.getContentType();
+    }
+
+    public String opaqueId() {
+        return this.opaqueId;
     }
 }

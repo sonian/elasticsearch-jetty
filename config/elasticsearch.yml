@@ -10,12 +10,47 @@ sonian.elasticsearch.http.filter:
     # Filter should use netty instead of jetty (default)
     #transport_type": "netty"
 
-    http_filter_chain: ["logging", "timeout"]
+    http_filter_chain: ["logging", "jsonlog", "timeout"]
     http_filter:
         # Simulated timeout filter - remove in production
         timeout.type: com.sonian.elasticsearch.http.filter.timeout.TimeoutFilterHttpServerAdapter
         # Request logging filter
         logging:
+            logger: com.sonian.elasticsearch.http.filter.logging
+            format: text
+            type: com.sonian.elasticsearch.http.filter.logging.LoggingFilterHttpServerAdapter
+            level: INFO
+            log_body: false
+            loggers:
+                stats:
+                    path: ["/_cluster/health", "/_cluster/nodes", "/_cluster/state", "/_cluster/nodes/{node}/stats"]
+                    method: GET
+                    level: TRACE
+                searches:
+                    path: ["/_search", "/_search/scroll", "/_search/scroll/{scroll_id}", "/{index}/_search",
+                            "/{index}/{type}/_search", "/{index}/{type}/{id}/_mlt"]
+                    method: GET, POST
+                    log_body: true
+                count:
+                    path: ["/_count", "/{index}/_count", "/{index}/{type}/_count"]
+                    method: GET, POST
+                    log_body: true
+                mget:
+                    path: ["/_mget", "/{index}/_mget", "/{index}/{type}/_mget"]
+                    method: GET, POST
+                    log_body: true
+                index-changes:
+                    path: ["/_aliases", "/{index}/_mapping", "/{index}/{type}/_mapping", "/_template/{name}",
+                        "/{index}/_settings"]
+                    method: PUT, POST
+                    log_body: true
+                cluster-changes:
+                    path: ["/_cluster/settings", "/_settings"]
+                    method: PUT, POST
+                    log_body: true
+        jsonlog:
+            logger: com.sonian.elasticsearch.http.filter.jsonlog
+            format: json
             type: com.sonian.elasticsearch.http.filter.logging.LoggingFilterHttpServerAdapter
             level: INFO
             log_body: false
