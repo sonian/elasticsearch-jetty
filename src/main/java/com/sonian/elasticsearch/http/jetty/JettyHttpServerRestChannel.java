@@ -66,7 +66,13 @@ public class JettyHttpServerRestChannel implements HttpChannel {
             resp.addHeader("Access-Control-Allow-Headers", "X-Requested-With");
         }
         try {
-            int contentLength = response.contentLength() + response.prefixContentLength() + response.suffixContentLength();
+            int contentLength = response.contentLength();
+            if (response.prefixContentLength() > 0) {
+                contentLength += response.prefixContentLength();
+            }
+            if (response.suffixContentLength() > 0) {
+                contentLength += response.suffixContentLength();
+            }
             resp.setContentLength(contentLength);
             ServletOutputStream out = resp.getOutputStream();
             if (response.prefixContent() != null) {
