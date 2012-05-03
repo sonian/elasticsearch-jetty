@@ -58,3 +58,11 @@ Jetty plugin exposes several ES settings as Jetty properties that can be used in
 * @jetty.bing_host@ - Http bind host, if the setting @sonian.elasticsearch.http.jetty.bind_host@ is not specified, ElasticSearch will try to use values specified in @http.bind_host@ and @http.host@ settings.
 * @jetty.port@ - Http port, if the setting @sonian.elasticsearch.http.jetty.port@ is not specified, ElasticSearch will try to use http.port or default to 9200-9300. If port is specified in form of the range, ElasticSearch will try to start Jetty with each individual port number iterating through the range.
 * @jetty.*@ - all other settings specified in @sonian.elasticsearch.http.jetty.@ are exposed as Jetty properties. For example, the setting @sonian.elasticsearch.http.jetty.foo@ can be referred to in Jetty configuration as *<Property name="jetty.foo"/>*.
+
+h2. User group
+
+Join <a href="https://groups.google.com/forum/#!forum/elasticsearch-jetty">elasticsearch-jetty group</a> for questions and discussions related to this plugin. 
+
+
+
+
