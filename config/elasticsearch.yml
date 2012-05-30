@@ -1,3 +1,4 @@
+index.mapper.dynamic: true
 cluster.name: jetty-test
 # Switch to jetty transport without filter
 #http.type: com.sonian.elasticsearch.http.jetty.JettyHttpServerTransportModule
