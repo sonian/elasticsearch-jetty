@@ -11,11 +11,10 @@
          id="HttpServerErrorHandler">
     </New>
 
-    <New class="org.eclipse.jetty.security.HashLoginService"
+    <New class="com.sonian.elasticsearch.http.jetty.security.ESLoginService"
          id="DefaultLoginService">
         <Set name="name">DefaultRealm</Set>
         <Set name="config"><Property name="es.config"/>/realm.properties</Set>
-        <Set name="refreshInterval">5</Set>
         <Call name="start"/>
     </New>
 
