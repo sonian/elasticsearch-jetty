@@ -25,12 +25,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 public class ESLoginServiceTests extends AbstractJettyHttpServerTests {
     @BeforeMethod
     public void setup() {
-        startNode("server1", ImmutableSettings
-                .settingsBuilder()
-                .put("node.local", "false")
-                .put("transport.host", "localhost")
-                .put("http.host", "localhost")
-                .build());
+        startNode("server1");
     }
 
     @AfterMethod
