@@ -23,10 +23,14 @@ import org.elasticsearch.common.logging.Loggers;
 import org.elasticsearch.common.network.NetworkUtils;
 import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.http.HttpServerTransport;
 import org.elasticsearch.node.Node;
 import org.elasticsearch.node.internal.InternalNode;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -179,5 +183,26 @@ public class AbstractJettyHttpServerTests {
                                 .put("number_of_replicas", 0))
                 .execute().actionGet();
         client("server1").admin().cluster().prepareHealth().setWaitForGreenStatus().execute().actionGet();
+    }
+
+    public void publishAuth(String server, String user, String pass, String roles) {
+        final String IDX = "auth";
+        List rolelist = new ArrayList();
+        for (String r : roles.split(":")) {
+            rolelist.add(r);
+        }
+        try {
+            client(server).prepareIndex().setIndex(IDX).setType("user")
+                    .setSource(XContentFactory.jsonBuilder()
+                            .startObject()
+                            .field("user", user)
+                            .field("password", pass)
+                            .field("roles", rolelist)
+                            .endObject())
+                    .execute().actionGet();
+            client(server).admin().indices().prepareRefresh(IDX).execute().actionGet();
+        } catch (IOException e) {
+            logger.warn("whhhhhhhhhhhaaaaaaaa");
+        }
     }
 }
