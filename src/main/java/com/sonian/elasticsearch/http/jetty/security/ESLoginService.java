@@ -26,13 +26,13 @@ import static org.elasticsearch.index.query.QueryBuilders.termQuery;
 public class ESLoginService extends MappedLoginService {
     private String config;
 
-    private String AUTH_INDEX = "auth";
+    private String authIndex;
 
-    private String AUTH_HOST = "localhost";
+    private String authHost;
 
-    private int AUTH_PORT = 9300;
+    private int authPort;
 
-    private String AUTH_CLUSTER = "test-cluster-alpha";
+    private String authCluster;
 
     private int cacheTime;
 
@@ -61,21 +61,35 @@ public class ESLoginService extends MappedLoginService {
     }
 
     public Client getClient() {
-        TransportAddress addr = new InetSocketTransportAddress(AUTH_HOST, AUTH_PORT);
+        TransportAddress addr = new InetSocketTransportAddress(authHost, authPort);
         TransportClient cli = new TransportClient(ImmutableSettings.settingsBuilder()
-                      .put("cluster.name", AUTH_CLUSTER)
+                      .put("cluster.name", authCluster)
                       .build());
         cli.addTransportAddress(addr);
         return cli;
     }
 
+    public void setAuthHost(String host) {
+        authHost = host;
+    }
+
+    public void setAuthPort(String port) {
+        authPort = Integer.parseInt(port);
+    }
+
+    public void setAuthCluster(String cluster) {
+        authCluster = cluster;
+    }
+
+    public void setAuthIndex(String idx) {
+        authIndex = idx;
+    }
+
     @Override
     protected void doStart() throws Exception {
-        Properties properties = new Properties();
-        Resource resource = Resource.newResource(config);
-        properties.load(resource.getInputStream());
-
-        // set up ES client....
+//        Properties properties = new Properties();
+//        Resource resource = Resource.newResource(config);
+//        properties.load(resource.getInputStream());
 
         super.doStart();
     }
@@ -101,16 +115,13 @@ public class ESLoginService extends MappedLoginService {
         String[] roles = null;
 
         try {
-            res = client.prepareSearch(AUTH_INDEX)
+            res = client.prepareSearch(authIndex)
                     .setQuery(termQuery("user", user))
                     .addField("password")
                     .addField("roles")
                     .execute().actionGet();
         } catch (IndexMissingException e) {
-            Log.warn("no auth index [{}]", AUTH_INDEX);
-//        } catch (IOException e) {
-//            Log.warn("error searching for user [{}] in index [{}]", user, AUTH_INDEX);
-//            throw new ElasticSearchException(e.toString());
+            Log.warn("no auth index [{}]", authIndex);
         }
 
 

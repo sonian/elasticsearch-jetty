@@ -14,6 +14,10 @@
     <New class="com.sonian.elasticsearch.http.jetty.security.ESLoginService"
          id="DefaultLoginService">
         <Set name="name">DefaultRealm</Set>
+        <Set name="authHost"><Property name="es.auth.host"/></Set>
+        <Set name="authPort"><Property name="es.auth.port"/></Set>
+        <Set name="authCluster"><Property name="es.auth.cluster"/></Set>
+        <Set name="authIndex"><Property name="es.auth.index"/></Set>
         <Set name="config"><Property name="es.config"/>/realm.properties</Set>
         <Call name="start"/>
     </New>

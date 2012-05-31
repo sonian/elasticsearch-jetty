@@ -188,13 +188,13 @@ public class AbstractJettyHttpServerTests {
     }
 
     public void publishAuth(String server, String user, String pass, String roles) {
-        final String IDX = "auth";
+        final String idx = "auth";
         List rolelist = new ArrayList();
         for (String r : roles.split(":")) {
             rolelist.add(r);
         }
         try {
-            client(server).prepareIndex().setIndex(IDX).setType("user")
+            client(server).prepareIndex().setIndex(idx).setType("user")
                     .setSource(XContentFactory.jsonBuilder()
                             .startObject()
                             .field("user", user)
@@ -202,7 +202,7 @@ public class AbstractJettyHttpServerTests {
                             .field("roles", rolelist)
                             .endObject())
                     .execute().actionGet();
-            client(server).admin().indices().prepareRefresh(IDX).execute().actionGet();
+            client(server).admin().indices().prepareRefresh(idx).execute().actionGet();
         } catch (IOException e) {
             logger.warn("whhhhhhhhhhhaaaaaaaa");
         }
