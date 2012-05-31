@@ -34,6 +34,10 @@ public class ESLoginService extends MappedLoginService {
 
     private String AUTH_CLUSTER = "test-cluster-alpha";
 
+    private int cacheTime;
+
+    private long lastHashPurge;
+
     public ESLoginService() {
     }
 
@@ -74,6 +78,19 @@ public class ESLoginService extends MappedLoginService {
         // set up ES client....
 
         super.doStart();
+    }
+
+    @Override
+    public UserIdentity login(String username, Object credentials)
+    {
+        long now = System.currentTimeMillis();
+
+        if (now - lastHashPurge > cacheTime || cacheTime == 0) {
+            _users.clear();
+            lastHashPurge = now;
+        }
+
+        return super.login(username,credentials);
     }
 
     @Override
