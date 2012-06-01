@@ -18,6 +18,7 @@
         <Set name="authPort"><Property name="es.transport.port"/></Set>
         <Set name="authCluster"><Property name="es.cluster"/></Set>
         <Set name="authIndex">auth</Set>
+        <Set name="cacheTime">300000</Set> <!-- millis -->
         <Call name="start"/>
     </New>
 

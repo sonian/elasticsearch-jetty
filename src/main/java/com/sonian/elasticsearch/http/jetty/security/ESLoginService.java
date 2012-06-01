@@ -80,6 +80,16 @@ public class ESLoginService extends MappedLoginService {
         authIndex = idx;
     }
 
+    public void setCacheTime(String t) {
+        cacheTime = Integer.parseInt(t);
+    }
+
+    @Override
+    protected void doStart() throws Exception {
+        lastHashPurge = 0;
+        super.doStart();
+    }
+
     @Override
     public UserIdentity login(String username, Object credentials)
     {
