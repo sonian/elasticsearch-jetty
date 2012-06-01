@@ -212,40 +212,17 @@ public class JettyHttpServerTransport extends AbstractLifecycleComponent<HttpSer
         return componentSettings;
     }
 
-    public String getTransportHost() {
+    private void loadTransportSettings() {
         if (transportHost == null) {
             InetSocketTransportAddress addr = (InetSocketTransportAddress) transport.boundAddress().publishAddress();
-            setTransportHost(addr.address().getHostName());
-            setTransportPort(addr.address().getPort());
+            transportHost = addr.address().getHostName();
+            transportPort = addr.address().getPort();
         }
-        return transportHost;
-    }
-
-    public void setTransportHost(String host) {
-        this.transportHost = host;
-    }
-
-    public int getTransportPort() {
-        return transportPort;
-    }
-
-    public void setTransportPort(String port) {
-        setTransportPort(Integer.parseInt(port));
-    }
-
-    public void setTransportPort(int port) {
-        this.transportPort = port;
-    }
-
-    public String transportHost() {
-        return getTransportHost();
-    }
-
-    public int transportPort() {
-        return getTransportPort();
     }
 
     private Map<String, String> jettySettings(String hostAddress, int port) {
+        loadTransportSettings();
+
         MapBuilder<String, String> jettySettings = MapBuilder.newMapBuilder();
         jettySettings.put("es.home", environment.homeFile().getAbsolutePath());
         jettySettings.put("es.config", environment.configFile().getAbsolutePath());
@@ -260,8 +237,8 @@ public class JettyHttpServerTransport extends AbstractLifecycleComponent<HttpSer
         }
         // Override jetty port in case we have a port-range
         jettySettings.put("jetty.port", String.valueOf(port));
-        jettySettings.put("es.auth.host", transportHost());
-        jettySettings.put("es.auth.port", String.valueOf(transportPort()));
+        jettySettings.put("es.auth.host", transportHost);
+        jettySettings.put("es.auth.port", String.valueOf(transportPort));
         jettySettings.put("es.auth.cluster", clusterName.value());
         jettySettings.put("es.auth.index", "auth");
         return jettySettings.immutableMap();
