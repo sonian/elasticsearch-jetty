@@ -25,7 +25,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 public class ESLoginServiceTests extends AbstractJettyHttpServerTests {
     @BeforeMethod
     public void setup() {
-        startNode("server1");
+        startNode("server1", ImmutableSettings
+                .settingsBuilder()
+                .put("sonian.elasticsearch.http.jetty.config", "jetty-esauth.xml"));
     }
 
     @AfterMethod
