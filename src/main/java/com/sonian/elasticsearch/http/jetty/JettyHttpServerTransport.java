@@ -239,7 +239,6 @@ public class JettyHttpServerTransport extends AbstractLifecycleComponent<HttpSer
         jettySettings.put("jetty.port", String.valueOf(port));
         jettySettings.put("es.transport.host", transportHost);
         jettySettings.put("es.transport.port", String.valueOf(transportPort));
-        jettySettings.put("es.auth.index", "auth");
         return jettySettings.immutableMap();
     }
 
