@@ -18,7 +18,6 @@
         <Set name="authPort"><Property name="es.transport.port"/></Set>
         <Set name="authCluster"><Property name="es.cluster"/></Set>
         <Set name="authIndex">auth</Set>
-        <Set name="config"><Property name="es.config"/>/realm.properties</Set>
         <Call name="start"/>
     </New>
 

@@ -24,8 +24,6 @@ import static org.elasticsearch.index.query.QueryBuilders.termQuery;
  * @author drewr
  */
 public class ESLoginService extends MappedLoginService {
-    private String config;
-
     private String authIndex;
 
     private String authHost;
@@ -45,21 +43,6 @@ public class ESLoginService extends MappedLoginService {
 
     public ESLoginService(String name) {
         setName(name);
-    }
-
-    public ESLoginService(String name, String config) {
-        setName(name);
-        setConfig(config);
-    }
-
-    public String getConfig() {
-        return this.config;
-    }
-
-    public void setConfig(String config) {
-        if (isRunning())
-            throw new IllegalStateException("Running");
-        this.config = config;
     }
 
     public Client getClient() {
