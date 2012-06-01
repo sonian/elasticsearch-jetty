@@ -38,6 +38,8 @@ public class ESLoginService extends MappedLoginService {
 
     private long lastHashPurge;
 
+    private Client client = null;
+
     public ESLoginService() {
     }
 
@@ -61,12 +63,22 @@ public class ESLoginService extends MappedLoginService {
     }
 
     public Client getClient() {
-        TransportAddress addr = new InetSocketTransportAddress(authHost, authPort);
-        TransportClient cli = new TransportClient(ImmutableSettings.settingsBuilder()
-                      .put("cluster.name", authCluster)
-                      .build());
-        cli.addTransportAddress(addr);
-        return cli;
+        if (client == null) {
+            TransportAddress addr = new InetSocketTransportAddress(authHost, authPort);
+            TransportClient cli = new TransportClient(ImmutableSettings.settingsBuilder()
+                    .put("cluster.name", authCluster)
+                    .build());
+            cli.addTransportAddress(addr);
+            client = cli;
+        }
+        return client;
+    }
+
+    public void closeClient() {
+        if (client != null) {
+            client.close();
+        }
+        client = null;
     }
 
     public void setAuthHost(String host) {
@@ -93,6 +105,7 @@ public class ESLoginService extends MappedLoginService {
         if (now - lastHashPurge > cacheTime || cacheTime == 0) {
             _users.clear();
             lastHashPurge = now;
+            closeClient();
         }
 
         return super.login(username,credentials);
@@ -111,28 +124,26 @@ public class ESLoginService extends MappedLoginService {
                     .addField("password")
                     .addField("roles")
                     .execute().actionGet();
-        } catch (IndexMissingException e) {
-            Log.warn("no auth index [{}]", authIndex);
-        }
-
-
-        // hello new visitor
-        try{
             if (res != null && res.hits().totalHits() > 0) {
                 pass = res.hits().getAt(0).field("password").value();
                 List<Object> rs = res.hits().getAt(0).field("roles").value();
                 roles = rs.toArray(new String[rs.size()]);
             }
+
+            if (pass == null) {
+                return null;
+            }
+
+            return putUser(user, Credential.getCredential(pass), roles);
+        } catch (IndexMissingException e) {
+            Log.warn("no auth index [{}]", authIndex);
+            closeClient();
         } catch (Exception e) {
-            throw new ElasticSearchException("", e);
+            Log.warn("error finding user [{}] in [{}]", user, authIndex);
+            Log.warn(e);
+            closeClient();
         }
-
-        if (pass == null) {
-            return null;
-        }
-
-        UserIdentity userI = putUser(user, Credential.getCredential(pass), roles);
-        return userI;
+        return null;
     }
 
     @Override
