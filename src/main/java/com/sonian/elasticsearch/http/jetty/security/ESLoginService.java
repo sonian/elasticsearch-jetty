@@ -86,15 +86,6 @@ public class ESLoginService extends MappedLoginService {
     }
 
     @Override
-    protected void doStart() throws Exception {
-//        Properties properties = new Properties();
-//        Resource resource = Resource.newResource(config);
-//        properties.load(resource.getInputStream());
-
-        super.doStart();
-    }
-
-    @Override
     public UserIdentity login(String username, Object credentials)
     {
         long now = System.currentTimeMillis();
