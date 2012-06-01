@@ -63,6 +63,8 @@ h2. User group
 
 Join <a href="https://groups.google.com/forum/#!forum/elasticsearch-jetty">elasticsearch-jetty group</a> for questions and discussions related to this plugin. 
 
+h2. Automation alternatives
 
-
-
+Here's a list of currently known links that attempt to automate the process of installing ES & the elasticsearch-jetty plugin:
+* https://github.com/pulkitsinghal/cookbook-elasticsearch
+** can also be mixed & matched to install/configure the following plugins: head, river-couchdb & cloud-aws
