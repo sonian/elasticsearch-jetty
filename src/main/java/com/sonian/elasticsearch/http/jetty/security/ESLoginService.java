@@ -45,7 +45,7 @@ public class ESLoginService extends MappedLoginService {
         setName(name);
     }
 
-    public Client getClient() {
+    public synchronized Client getClient() {
         if (client == null) {
             TransportAddress addr = new InetSocketTransportAddress(authHost, authPort);
             TransportClient cli = new TransportClient(ImmutableSettings.settingsBuilder()
@@ -57,7 +57,7 @@ public class ESLoginService extends MappedLoginService {
         return client;
     }
 
-    public void closeClient() {
+    public synchronized void closeClient() {
         if (client != null) {
             client.close();
         }
