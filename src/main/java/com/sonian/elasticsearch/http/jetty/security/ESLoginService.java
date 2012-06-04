@@ -36,7 +36,7 @@ public class ESLoginService extends MappedLoginService {
 
     private long lastHashPurge;
 
-    private Client client = null;
+    private Client client;
 
     public ESLoginService() {
     }
@@ -45,7 +45,7 @@ public class ESLoginService extends MappedLoginService {
         setName(name);
     }
 
-    public synchronized Client getClient() {
+    private void startClient() {
         if (client == null) {
             TransportAddress addr = new InetSocketTransportAddress(authHost, authPort);
             TransportClient cli = new TransportClient(ImmutableSettings.settingsBuilder()
@@ -54,10 +54,9 @@ public class ESLoginService extends MappedLoginService {
             cli.addTransportAddress(addr);
             client = cli;
         }
-        return client;
     }
 
-    public synchronized void closeClient() {
+    private void closeClient() {
         if (client != null) {
             client.close();
         }
@@ -86,8 +85,15 @@ public class ESLoginService extends MappedLoginService {
 
     @Override
     protected void doStart() throws Exception {
-        lastHashPurge = 0;
         super.doStart();
+        lastHashPurge = 0;
+        startClient();
+      }
+
+    @Override
+    protected void doStop() throws Exception {
+        closeClient();
+        super.doStop();
     }
 
     @Override
@@ -98,7 +104,6 @@ public class ESLoginService extends MappedLoginService {
         if (now - lastHashPurge > cacheTime || cacheTime == 0) {
             _users.clear();
             lastHashPurge = now;
-            closeClient();
         }
 
         return super.login(username,credentials);
@@ -106,7 +111,6 @@ public class ESLoginService extends MappedLoginService {
 
     @Override
     public UserIdentity loadUser(String user) {
-        Client client = getClient();
         SearchResponse res = null;
         String pass = null;
         String[] roles = null;
@@ -134,7 +138,6 @@ public class ESLoginService extends MappedLoginService {
         } catch (Exception e) {
             Log.warn("error finding user [{}] in [{}]", user, authIndex);
             Log.warn(e);
-            closeClient();
         }
         return null;
     }
