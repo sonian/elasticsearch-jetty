@@ -115,9 +115,24 @@ public class LoggingFilterHttpServerAdapter implements FilterHttpServerAdapter {
 
         private final String content;
 
+        private final String localaddr;
+
+        private final long localport;
+
+        private final String remoteaddr;
+
+        private final long remoteport;
+
+        private final String scheme;
+
+        private final String remoteuser;
+
+        private final String opaqueId;
+
         public LoggingHttpChannel(HttpRequest request, HttpChannel channel, String format, boolean logBody) {
             this.channel = channel;
             this.request = request;
+
             this.format = format;
             method = request.method().name();
             path = request.rawPath();
@@ -128,6 +143,15 @@ public class LoggingFilterHttpServerAdapter implements FilterHttpServerAdapter {
             } else {
                 content = null;
             }
+
+            JettyHttpServerRestRequest req = (JettyHttpServerRestRequest) request;
+            localaddr = req.localAddr();
+            localport = req.localPort();
+            remoteaddr = req.remoteAddr();
+            remoteport = req.remotePort();
+            scheme = req.scheme();
+            remoteuser = req.remoteUser();
+            opaqueId = req.opaqueId();
         }
 
         public void logText(RestResponse response, long contentLength, long now) {
@@ -158,16 +182,15 @@ public class LoggingFilterHttpServerAdapter implements FilterHttpServerAdapter {
             long latency = now - timestamp;
             DateTime nowdt = new DateTime(now);
             DateTime startdt = new DateTime(timestamp);
-            JettyHttpServerRestRequest req = (JettyHttpServerRestRequest) request;
             try {
                 XContentBuilder json = XContentFactory.jsonBuilder().startObject();
                 json.field("time", nowdt.toDateTimeISO().toString());
                 json.field("starttime", startdt.toDateTimeISO().toString());
-                json.field("localaddr", req.localAddr());
-                json.field("localport", req.localPort());
-                json.field("remoteaddr", req.remoteAddr());
-                json.field("remoteport", req.remotePort());
-                json.field("scheme", req.scheme());
+                json.field("localaddr", localaddr);
+                json.field("localport", localport);
+                json.field("remoteaddr", remoteaddr);
+                json.field("remoteport", remoteport);
+                json.field("scheme", scheme);
                 json.field("method", method);
                 json.field("path", path);
                 json.field("querystr", params);
@@ -181,11 +204,11 @@ public class LoggingFilterHttpServerAdapter implements FilterHttpServerAdapter {
                 json.field("hour", nowdt.toString("HH"));
                 json.field("minute", nowdt.toString("mm"));
                 json.field("dow", nowdt.toString("EEE"));
-                if (req.remoteUser() != null) {
-                    json.field("user", req.remoteUser());
+                if (remoteuser != null) {
+                    json.field("user", remoteuser);
                 }
-                if (req.opaqueId() != null) {
-                    json.field("opaque-id", req.opaqueId());
+                if (opaqueId != null) {
+                    json.field("opaque-id", opaqueId);
                 }
                 if (content != null) {
                     json.field("data", content);
