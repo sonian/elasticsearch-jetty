@@ -46,6 +46,8 @@ public class LoggingFilterHttpServerAdapter implements FilterHttpServerAdapter {
 
     private final String logFormat;
 
+    private final String clusterName;
+
     @Inject
     public LoggingFilterHttpServerAdapter(Settings settings, @Assisted String name, @Assisted Settings filterSettings, RequestLoggingLevelSettings requestLoggingLevelSettings) {
         String loggerName = filterSettings.get("logger", Classes.getPackageName(getClass()));
@@ -55,6 +57,8 @@ public class LoggingFilterHttpServerAdapter implements FilterHttpServerAdapter {
         } else {
             this.logger = Loggers.getLogger(loggerName, settings);
         }
+
+        clusterName = settings.get("cluster.name");
 
         this.requestLoggingLevelSettings = requestLoggingLevelSettings;
         requestLoggingLevelSettings.updateSettings(filterSettings);
@@ -68,7 +72,7 @@ public class LoggingFilterHttpServerAdapter implements FilterHttpServerAdapter {
     public void doFilter(HttpRequest request, HttpChannel channel, FilterChain filterChain) {
         RequestLoggingLevel level = requestLoggingLevelSettings.getLoggingLevel(request.method(), request.path());
         if (level.shouldLog(logger)) {
-            filterChain.doFilter(request, new LoggingHttpChannel(request, channel, this.logFormat, level.logBody()));
+            filterChain.doFilter(request, new LoggingHttpChannel(request, channel, this.logFormat, this.clusterName, level.logBody()));
         } else {
             filterChain.doFilter(request, channel);
         }
@@ -129,9 +133,12 @@ public class LoggingFilterHttpServerAdapter implements FilterHttpServerAdapter {
 
         private final String opaqueId;
 
-        public LoggingHttpChannel(HttpRequest request, HttpChannel channel, String format, boolean logBody) {
+        private final String cluster;
+
+        public LoggingHttpChannel(HttpRequest request, HttpChannel channel, String format, String cluster, boolean logBody) {
             this.channel = channel;
             this.request = request;
+            this.cluster = cluster;
 
             this.format = format;
             method = request.method().name();
@@ -204,6 +211,7 @@ public class LoggingFilterHttpServerAdapter implements FilterHttpServerAdapter {
                 json.field("hour", nowdt.toString("HH"));
                 json.field("minute", nowdt.toString("mm"));
                 json.field("dow", nowdt.toString("EEE"));
+                json.field("cluster", cluster);
                 if (remoteuser != null) {
                     json.field("user", remoteuser);
                 }
