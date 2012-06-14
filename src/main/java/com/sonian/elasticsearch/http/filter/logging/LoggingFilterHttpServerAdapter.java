@@ -18,6 +18,7 @@ package com.sonian.elasticsearch.http.filter.logging;
 import com.sonian.elasticsearch.http.filter.FilterChain;
 import com.sonian.elasticsearch.http.filter.FilterHttpServerAdapter;
 import com.sonian.elasticsearch.http.jetty.JettyHttpServerRestRequest;
+import org.elasticsearch.cluster.ClusterName;
 import org.elasticsearch.common.Classes;
 import org.elasticsearch.common.inject.Inject;
 import org.elasticsearch.common.inject.assistedinject.Assisted;
@@ -58,7 +59,7 @@ public class LoggingFilterHttpServerAdapter implements FilterHttpServerAdapter {
             this.logger = Loggers.getLogger(loggerName, settings);
         }
 
-        clusterName = settings.get("cluster.name");
+        clusterName = ClusterName.clusterNameFromSettings(settings).value();
 
         this.requestLoggingLevelSettings = requestLoggingLevelSettings;
         requestLoggingLevelSettings.updateSettings(filterSettings);
