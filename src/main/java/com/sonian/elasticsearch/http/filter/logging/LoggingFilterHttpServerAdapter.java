@@ -18,6 +18,7 @@ package com.sonian.elasticsearch.http.filter.logging;
 import com.sonian.elasticsearch.http.filter.FilterChain;
 import com.sonian.elasticsearch.http.filter.FilterHttpServerAdapter;
 import com.sonian.elasticsearch.http.jetty.JettyHttpServerRestRequest;
+import org.elasticsearch.cluster.ClusterName;
 import org.elasticsearch.common.Classes;
 import org.elasticsearch.common.inject.Inject;
 import org.elasticsearch.common.inject.assistedinject.Assisted;
@@ -46,8 +47,11 @@ public class LoggingFilterHttpServerAdapter implements FilterHttpServerAdapter {
 
     private final String logFormat;
 
+    private final String clusterName;
+
     @Inject
-    public LoggingFilterHttpServerAdapter(Settings settings, @Assisted String name, @Assisted Settings filterSettings, RequestLoggingLevelSettings requestLoggingLevelSettings) {
+    public LoggingFilterHttpServerAdapter(Settings settings, @Assisted String name, @Assisted Settings filterSettings,
+                                          RequestLoggingLevelSettings requestLoggingLevelSettings, ClusterName clusterName) {
         String loggerName = filterSettings.get("logger", Classes.getPackageName(getClass()));
         this.logFormat = filterSettings.get("format", "text");
         if (logFormat.equals("json")) {
@@ -55,6 +59,8 @@ public class LoggingFilterHttpServerAdapter implements FilterHttpServerAdapter {
         } else {
             this.logger = Loggers.getLogger(loggerName, settings);
         }
+
+        this.clusterName = clusterName.value();
 
         this.requestLoggingLevelSettings = requestLoggingLevelSettings;
         requestLoggingLevelSettings.updateSettings(filterSettings);
@@ -204,6 +210,7 @@ public class LoggingFilterHttpServerAdapter implements FilterHttpServerAdapter {
                 json.field("hour", nowdt.toString("HH"));
                 json.field("minute", nowdt.toString("mm"));
                 json.field("dow", nowdt.toString("EEE"));
+                json.field("cluster", clusterName);
                 if (remoteuser != null) {
                     json.field("user", remoteuser);
                 }
