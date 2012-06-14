@@ -50,7 +50,8 @@ public class LoggingFilterHttpServerAdapter implements FilterHttpServerAdapter {
     private final String clusterName;
 
     @Inject
-    public LoggingFilterHttpServerAdapter(Settings settings, @Assisted String name, @Assisted Settings filterSettings, RequestLoggingLevelSettings requestLoggingLevelSettings) {
+    public LoggingFilterHttpServerAdapter(Settings settings, @Assisted String name, @Assisted Settings filterSettings,
+                                          RequestLoggingLevelSettings requestLoggingLevelSettings, ClusterName clusterName) {
         String loggerName = filterSettings.get("logger", Classes.getPackageName(getClass()));
         this.logFormat = filterSettings.get("format", "text");
         if (logFormat.equals("json")) {
@@ -59,7 +60,7 @@ public class LoggingFilterHttpServerAdapter implements FilterHttpServerAdapter {
             this.logger = Loggers.getLogger(loggerName, settings);
         }
 
-        clusterName = ClusterName.clusterNameFromSettings(settings).value();
+        this.clusterName = clusterName.value();
 
         this.requestLoggingLevelSettings = requestLoggingLevelSettings;
         requestLoggingLevelSettings.updateSettings(filterSettings);
