@@ -4,19 +4,22 @@ import org.eclipse.jetty.http.security.Credential;
 import org.eclipse.jetty.security.MappedLoginService;
 import org.eclipse.jetty.server.UserIdentity;
 import org.eclipse.jetty.util.log.Log;
-import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.index.get.GetField;
 import org.elasticsearch.indices.IndexMissingException;
 
-import java.util.*;
+import java.util.List;
 
-import static org.elasticsearch.index.query.QueryBuilders.termQuery;
+import static org.elasticsearch.common.collect.Lists.newArrayList;
 
 /**
  * @author drewr
  */
 public class ESLoginService extends MappedLoginService {
     private volatile String authIndex;
+
+    private volatile String authType;
 
     private volatile int cacheTime = -1;
 
@@ -35,19 +38,29 @@ public class ESLoginService extends MappedLoginService {
         this.client = client;
     }
 
-    public void setAuthIndex(String idx) {
-        authIndex = idx;
+    public void setAuthIndex(String authIndex) {
+        this.authIndex = authIndex;
     }
 
-    public void setCacheTime(String t) {
-        cacheTime = Integer.parseInt(t);
+    public void setAuthType(String authType) {
+        this.authType = authType;
+    }
+
+    public void setCacheTime(int cacheTime) {
+        this.cacheTime = cacheTime;
     }
 
     @Override
     protected void doStart() throws Exception {
         super.doStart();
+        if (authIndex == null) {
+            throw new IllegalArgumentException("User realm " + getName() + " has not been  properly configured - missing authentication index");
+        }
+        if (authType == null) {
+            throw new IllegalArgumentException("User realm " + getName() + " has not been  properly configured - missing authentication type");
+        }
         lastHashPurge = 0;
-      }
+    }
 
     @Override
     protected void doStop() throws Exception {
@@ -55,8 +68,7 @@ public class ESLoginService extends MappedLoginService {
     }
 
     @Override
-    public UserIdentity login(String username, Object credentials)
-    {
+    public UserIdentity login(String username, Object credentials) {
         if (cacheTime >= 0) {
             long now = System.currentTimeMillis();
 
@@ -66,37 +78,46 @@ public class ESLoginService extends MappedLoginService {
             }
         }
 
-        return super.login(username,credentials);
+        return super.login(username, credentials);
     }
 
     @Override
     public UserIdentity loadUser(String user) {
-        SearchResponse res = null;
-        String pass = null;
-        String[] roles = null;
-
         try {
-            res = client.prepareSearch(authIndex)
-                    .setQuery(termQuery("user", user))
-                    .addField("password")
-                    .addField("roles")
+            GetResponse response = client.prepareGet(authIndex, authType, user)
+                    .setFields("password", "roles")
                     .execute().actionGet();
-            if (res != null && res.hits().totalHits() > 0) {
-                pass = res.hits().getAt(0).field("password").value();
-                List<Object> rs = res.hits().getAt(0).field("roles").value();
-                roles = rs.toArray(new String[rs.size()]);
+            if (response.exists()) {
+                Credential credential = null;
+                GetField passwordField = response.field("password");
+                if (passwordField != null) {
+                    credential = Credential.getCredential((String) passwordField.value());
+                }
+                String[] roles = getStringValues(response.field("roles"));
+                return putUser(user, credential, roles);
             }
-
-            if (pass == null) {
-                return null;
-            }
-            return putUser(user, Credential.getCredential(pass), roles);
         } catch (IndexMissingException e) {
             Log.warn("no auth index [{}]", authIndex);
         } catch (Exception e) {
             Log.warn("error finding user [" + user + "] in [" + authIndex + "]", e);
         }
         return null;
+    }
+
+    private String[] getStringValues(GetField field) {
+        List<String> values = newArrayList();
+        if (field != null) {
+            for(Object value : field.values()) {
+                if (field.value() instanceof Iterable) {
+                    for(Object val : (Iterable) field.value()) {
+                        values.add((String) val);
+                    }
+                } else {
+                    values.add((String) value);
+                }
+            }
+        }
+        return values.toArray(new String[values.size()]);
     }
 
     @Override

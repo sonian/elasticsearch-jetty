@@ -17,6 +17,7 @@
         <Set name="client"><Ref id="ESClient"/></Set>
         <Set name="name">DefaultRealm</Set>
         <Set name="authIndex">auth</Set>
+        <Set name="authType">user</Set>
         <Set name="cacheTime">300000</Set> <!-- millis -->
         <Call name="start"/>
     </New>
