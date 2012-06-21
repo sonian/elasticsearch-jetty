@@ -37,7 +37,6 @@ import org.elasticsearch.http.HttpServerAdapter;
 import org.elasticsearch.http.HttpServerTransport;
 import org.elasticsearch.http.HttpStats;
 import org.elasticsearch.transport.BindTransportException;
-import org.elasticsearch.transport.Transport;
 
 import java.io.File;
 import java.net.*;
@@ -53,8 +52,6 @@ public class JettyHttpServerTransport extends AbstractLifecycleComponent<HttpSer
     public static final String TRANSPORT_ATTRIBUTE = "com.sonian.elasticsearch.http.jetty.transport";
 
     private final NetworkService networkService;
-
-    private final Transport transport;
 
     private final String port;
 
@@ -80,14 +77,9 @@ public class JettyHttpServerTransport extends AbstractLifecycleComponent<HttpSer
 
     private volatile HttpServerAdapter httpServerAdapter;
 
-    private volatile String transportHost;
-
-    private volatile int transportPort;
-
     @Inject
     public JettyHttpServerTransport(Settings settings, Environment environment, NetworkService networkService,
-                                    ESLoggerWrapper loggerWrapper, ClusterName clusterName, Transport transport,
-                                    Client client) {
+                                    ESLoggerWrapper loggerWrapper, ClusterName clusterName, Client client) {
         super(settings);
         this.environment = environment;
         this.networkService = networkService;
@@ -98,7 +90,6 @@ public class JettyHttpServerTransport extends AbstractLifecycleComponent<HttpSer
         this.jettyConfigServerId = componentSettings.get("server_id", "ESServer");
         this.loggerWrapper = loggerWrapper;
         this.clusterName = clusterName;
-        this.transport = transport;
         this.client = client;
     }
 
@@ -263,17 +254,7 @@ public class JettyHttpServerTransport extends AbstractLifecycleComponent<HttpSer
         return componentSettings;
     }
 
-    private void loadTransportSettings() {
-        if (transportHost == null) {
-            InetSocketTransportAddress addr = (InetSocketTransportAddress) transport.boundAddress().publishAddress();
-            transportHost = addr.address().getHostName();
-            transportPort = addr.address().getPort();
-        }
-    }
-
     private Map<String, String> jettySettings(String hostAddress, int port) {
-        loadTransportSettings();
-
         MapBuilder<String, String> jettySettings = MapBuilder.newMapBuilder();
         jettySettings.put("es.home", environment.homeFile().getAbsolutePath());
         jettySettings.put("es.config", environment.configFile().getAbsolutePath());
@@ -288,8 +269,6 @@ public class JettyHttpServerTransport extends AbstractLifecycleComponent<HttpSer
         }
         // Override jetty port in case we have a port-range
         jettySettings.put("jetty.port", String.valueOf(port));
-        jettySettings.put("es.transport.host", transportHost);
-        jettySettings.put("es.transport.port", String.valueOf(transportPort));
         return jettySettings.immutableMap();
     }
 

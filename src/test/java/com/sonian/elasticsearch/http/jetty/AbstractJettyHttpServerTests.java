@@ -53,9 +53,7 @@ public class AbstractJettyHttpServerTests {
             .put("cluster.name", "test-cluster-" + NetworkUtils.getLocalAddress().getHostName())
             .put("http.type", JettyHttpServerTransportModule.class.getName())
             .put("sonian.elasticsearch.http.jetty.port", "9200-9300")
-            .put("node.local", false)
-            .put("transport.host", "localhost")
-            .put("http.host", "localhost")
+            .put("node.local", true)
             .put("gateway.type", "none")
             .put("index.store.type", "memory")
             .build();
