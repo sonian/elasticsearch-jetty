@@ -9,6 +9,7 @@
     <!-- ==================================================== -->
     <New class="com.sonian.elasticsearch.http.jetty.handler.JettyHttpServerTransportHandler"
          id="HttpServerAdapterHandler">
+        <Set name="transport"><Ref id="ESServerTransport"/></Set>
     </New>
 
     <!-- ==================================================== -->

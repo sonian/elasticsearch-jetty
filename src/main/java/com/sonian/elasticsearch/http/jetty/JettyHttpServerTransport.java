@@ -21,6 +21,7 @@ import org.eclipse.jetty.util.component.LifeCycle;
 import org.eclipse.jetty.util.log.Log;
 import org.eclipse.jetty.xml.XmlConfiguration;
 import org.elasticsearch.ElasticSearchException;
+import org.elasticsearch.client.Client;
 import org.elasticsearch.cluster.ClusterName;
 import org.elasticsearch.common.collect.MapBuilder;
 import org.elasticsearch.common.component.AbstractLifecycleComponent;
@@ -71,6 +72,8 @@ public class JettyHttpServerTransport extends AbstractLifecycleComponent<HttpSer
 
     private final ClusterName clusterName;
 
+    private final Client client;
+
     private volatile BoundTransportAddress boundAddress;
 
     private volatile Server jettyServer;
@@ -83,7 +86,8 @@ public class JettyHttpServerTransport extends AbstractLifecycleComponent<HttpSer
 
     @Inject
     public JettyHttpServerTransport(Settings settings, Environment environment, NetworkService networkService,
-                                    ESLoggerWrapper loggerWrapper, ClusterName clusterName, Transport transport) {
+                                    ESLoggerWrapper loggerWrapper, ClusterName clusterName, Transport transport,
+                                    Client client) {
         super(settings);
         this.environment = environment;
         this.networkService = networkService;
@@ -95,6 +99,7 @@ public class JettyHttpServerTransport extends AbstractLifecycleComponent<HttpSer
         this.loggerWrapper = loggerWrapper;
         this.clusterName = clusterName;
         this.transport = transport;
+        this.client = client;
     }
 
     @Override
@@ -122,6 +127,9 @@ public class JettyHttpServerTransport extends AbstractLifecycleComponent<HttpSer
                         // in the later configurations
                         if (lastXmlConfiguration != null) {
                             xmlConfiguration.getIdMap().putAll(lastXmlConfiguration.getIdMap());
+                        } else {
+                            xmlConfiguration.getIdMap().put("ESServerTransport", JettyHttpServerTransport.this);
+                            xmlConfiguration.getIdMap().put("ESClient", client);
                         }
                         // Inject elasticsearch properties
                         xmlConfiguration.getProperties().putAll(esProperties);
