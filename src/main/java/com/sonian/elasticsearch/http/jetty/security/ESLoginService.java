@@ -4,39 +4,25 @@ import org.eclipse.jetty.http.security.Credential;
 import org.eclipse.jetty.security.MappedLoginService;
 import org.eclipse.jetty.server.UserIdentity;
 import org.eclipse.jetty.util.log.Log;
-import org.eclipse.jetty.util.resource.Resource;
-import org.elasticsearch.ElasticSearchException;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
-import org.elasticsearch.client.transport.TransportClient;
-import org.elasticsearch.common.settings.ImmutableSettings;
-import org.elasticsearch.common.transport.InetSocketTransportAddress;
-import org.elasticsearch.common.transport.TransportAddress;
 import org.elasticsearch.indices.IndexMissingException;
 
-import java.io.IOException;
 import java.util.*;
 
-import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 import static org.elasticsearch.index.query.QueryBuilders.termQuery;
 
 /**
  * @author drewr
  */
 public class ESLoginService extends MappedLoginService {
-    private String authIndex;
+    private volatile String authIndex;
 
-    private String authHost;
+    private volatile int cacheTime;
 
-    private int authPort;
+    private volatile long lastHashPurge;
 
-    private String authCluster;
-
-    private int cacheTime;
-
-    private long lastHashPurge;
-
-    private Client client;
+    private volatile Client client;
 
     public ESLoginService() {
     }
@@ -45,34 +31,8 @@ public class ESLoginService extends MappedLoginService {
         setName(name);
     }
 
-    private void startClient() {
-        if (client == null) {
-            TransportAddress addr = new InetSocketTransportAddress(authHost, authPort);
-            TransportClient cli = new TransportClient(ImmutableSettings.settingsBuilder()
-                    .put("cluster.name", authCluster)
-                    .build());
-            cli.addTransportAddress(addr);
-            client = cli;
-        }
-    }
-
-    private void closeClient() {
-        if (client != null) {
-            client.close();
-        }
-        client = null;
-    }
-
-    public void setAuthHost(String host) {
-        authHost = host;
-    }
-
-    public void setAuthPort(String port) {
-        authPort = Integer.parseInt(port);
-    }
-
-    public void setAuthCluster(String cluster) {
-        authCluster = cluster;
+    public void setClient(Client client) {
+        this.client = client;
     }
 
     public void setAuthIndex(String idx) {
@@ -87,12 +47,10 @@ public class ESLoginService extends MappedLoginService {
     protected void doStart() throws Exception {
         super.doStart();
         lastHashPurge = 0;
-        startClient();
       }
 
     @Override
     protected void doStop() throws Exception {
-        closeClient();
         super.doStop();
     }
 
@@ -130,14 +88,11 @@ public class ESLoginService extends MappedLoginService {
             if (pass == null) {
                 return null;
             }
-
             return putUser(user, Credential.getCredential(pass), roles);
         } catch (IndexMissingException e) {
             Log.warn("no auth index [{}]", authIndex);
-            closeClient();
         } catch (Exception e) {
-            Log.warn("error finding user [{}] in [{}]", user, authIndex);
-            Log.warn(e);
+            Log.warn("error finding user [" + user + "] in [" + authIndex + "]", e);
         }
         return null;
     }

@@ -5,6 +5,7 @@
 
     <New class="com.sonian.elasticsearch.http.jetty.handler.JettyHttpServerTransportHandler"
          id="HttpServerAdapterHandler">
+        <Set name="transport"><Ref id="ESServerTransport"/></Set>
     </New>
 
     <New class="com.sonian.elasticsearch.http.jetty.error.JettyHttpServerErrorHandler"
@@ -13,10 +14,8 @@
 
     <New class="com.sonian.elasticsearch.http.jetty.security.ESLoginService"
          id="DefaultLoginService">
+        <Set name="client"><Ref id="ESClient"/></Set>
         <Set name="name">DefaultRealm</Set>
-        <Set name="authHost"><Property name="es.transport.host"/></Set>
-        <Set name="authPort"><Property name="es.transport.port"/></Set>
-        <Set name="authCluster"><Property name="es.cluster"/></Set>
         <Set name="authIndex">auth</Set>
         <Set name="cacheTime">300000</Set> <!-- millis -->
         <Call name="start"/>
