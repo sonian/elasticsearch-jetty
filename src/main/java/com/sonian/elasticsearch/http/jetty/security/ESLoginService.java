@@ -18,7 +18,7 @@ import static org.elasticsearch.index.query.QueryBuilders.termQuery;
 public class ESLoginService extends MappedLoginService {
     private volatile String authIndex;
 
-    private volatile int cacheTime;
+    private volatile int cacheTime = -1;
 
     private volatile long lastHashPurge;
 
@@ -57,11 +57,13 @@ public class ESLoginService extends MappedLoginService {
     @Override
     public UserIdentity login(String username, Object credentials)
     {
-        long now = System.currentTimeMillis();
+        if (cacheTime >= 0) {
+            long now = System.currentTimeMillis();
 
-        if (now - lastHashPurge > cacheTime || cacheTime == 0) {
-            _users.clear();
-            lastHashPurge = now;
+            if (now - lastHashPurge > cacheTime || cacheTime == 0) {
+                _users.clear();
+                lastHashPurge = now;
+            }
         }
 
         return super.login(username,credentials);
