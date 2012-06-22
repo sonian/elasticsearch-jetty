@@ -17,7 +17,6 @@
         <Set name="name">DefaultRealm</Set>
         <Set name="config"><Property name="es.config"/>/realm.properties</Set>
         <Set name="refreshInterval">5</Set>
-        <Call name="start"/>
     </New>
 
     <New class="org.eclipse.jetty.http.security.Constraint"
@@ -327,12 +326,6 @@
             </Arg>
         </Call>
     </New>
-
-    <Call name="addBean">
-        <Arg>
-            <Ref id="DefaultLoginService"/>
-        </Arg>
-    </Call>
 
     <Call name="addBean">
         <Arg>

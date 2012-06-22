@@ -29,7 +29,7 @@ public class ESLoginServiceTests extends AbstractJettyHttpServerTests {
     public void setup() {
         startNode("server1", ImmutableSettings
                 .settingsBuilder()
-                .put("sonian.elasticsearch.http.jetty.config", "jetty-esauth.xml"));
+                .put("sonian.elasticsearch.http.jetty.config", "jetty.xml,jetty-esauth.xml"));
     }
 
     @AfterMethod
