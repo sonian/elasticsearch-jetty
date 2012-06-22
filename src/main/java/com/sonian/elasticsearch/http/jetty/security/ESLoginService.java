@@ -21,6 +21,10 @@ public class ESLoginService extends MappedLoginService {
 
     private volatile String authType;
 
+    private volatile String passwordField = "password";
+
+    private volatile String rolesField = "roles";
+
     private volatile int cacheTime = -1;
 
     private volatile long lastHashPurge;
@@ -38,16 +42,48 @@ public class ESLoginService extends MappedLoginService {
         this.client = client;
     }
 
+    public Client getClient() {
+        return client;
+    }
+
     public void setAuthIndex(String authIndex) {
         this.authIndex = authIndex;
+    }
+
+    public String getAuthIndex() {
+        return authIndex;
     }
 
     public void setAuthType(String authType) {
         this.authType = authType;
     }
 
+    public String getAuthType() {
+        return authType;
+    }
+
     public void setCacheTime(int cacheTime) {
         this.cacheTime = cacheTime;
+    }
+
+    public int getCacheTime() {
+        return cacheTime;
+    }
+
+    public void setPasswordField(String passwordField) {
+        this.passwordField = passwordField;
+    }
+
+    public String getPasswordField() {
+        return passwordField;
+    }
+
+    public void setRolesField(String rolesField) {
+        this.rolesField = rolesField;
+    }
+
+    public String getRolesField() {
+        return rolesField;
     }
 
     @Override
@@ -85,15 +121,15 @@ public class ESLoginService extends MappedLoginService {
     public UserIdentity loadUser(String user) {
         try {
             GetResponse response = client.prepareGet(authIndex, authType, user)
-                    .setFields("password", "roles")
+                    .setFields(passwordField, rolesField)
                     .execute().actionGet();
             if (response.exists()) {
                 Credential credential = null;
-                GetField passwordField = response.field("password");
-                if (passwordField != null) {
-                    credential = Credential.getCredential((String) passwordField.value());
+                GetField passwordGetField = response.field(passwordField);
+                if (passwordGetField != null) {
+                    credential = Credential.getCredential((String) passwordGetField.value());
                 }
-                String[] roles = getStringValues(response.field("roles"));
+                String[] roles = getStringValues(response.field(rolesField));
                 return putUser(user, credential, roles);
             }
         } catch (IndexMissingException e) {
