@@ -44,6 +44,7 @@ public class JettyHttpServerTransportHandler extends AbstractHandler {
     protected void doStart() throws Exception {
         super.doStart();
         Server server = getServer();
+        // JettyHttpServerTransport can be either set explicitly in jetty.xml or obtained from server
         if (transport == null) {
             JettyHttpServerTransport transport = (JettyHttpServerTransport) server.getAttribute(JettyHttpServerTransport.TRANSPORT_ATTRIBUTE);
             if (transport == null) {

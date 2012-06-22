@@ -149,6 +149,7 @@ public class JettyHttpServerTransport extends AbstractLifecycleComponent<HttpSer
                         return true;
                     }
 
+                    // Keep it for now for backward compatibility with previous versions of jetty.xml
                     server.setAttribute(TRANSPORT_ATTRIBUTE, JettyHttpServerTransport.this);
 
                     // Start all lifecycle objects configured by xml configurations
