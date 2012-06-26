@@ -147,7 +147,7 @@
               <version>0.5</version>
               <configuration>
                 <description>Official ${project.name} build of the ${project.version} release</description>
-                <override>false</override>
+                <override>true</override>
                 <includeAttached>true</includeAttached>
                 <server>github</server>
               </configuration>
