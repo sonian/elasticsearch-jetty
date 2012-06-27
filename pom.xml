@@ -146,7 +146,7 @@
               <artifactId>downloads-maven-plugin</artifactId>
               <version>0.6</version>
               <configuration>
-                <description>${project.name}-${project.version} release</description>
+                <description></description>
                 <override>true</override>
                 <includes>
                   <include>releases/elasticsearch-jetty-${project.version}.zip</include>
