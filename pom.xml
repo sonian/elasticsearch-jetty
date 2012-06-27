@@ -148,7 +148,9 @@
               <configuration>
                 <description>Official ${project.name} build of the ${project.version} release</description>
                 <override>true</override>
-                <includeAttached>true</includeAttached>
+                <includes>
+                  <include>releases/elasticsearch-jetty-${project.version}.zip</include>
+                </includes>
                 <server>github</server>
               </configuration>
             </plugin>
