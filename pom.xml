@@ -62,6 +62,7 @@
     </developer>
   </developers>
 
+
   <parent>
     <groupId>org.sonatype.oss</groupId>
     <artifactId>oss-parent</artifactId>
@@ -73,6 +74,14 @@
     <jetty.version>7.4.5.v20110725</jetty.version>
     <github.global.server>github</github.global.server>
   </properties>
+
+  <repositories>
+    <repository>
+      <id>sonatype</id>
+      <name>elasticsearch sonatype repo</name>
+      <url>https://oss.sonatype.org/content/repositories/releases</url>
+    </repository>
+  </repositories>
 
   <dependencies>
     <dependency>
