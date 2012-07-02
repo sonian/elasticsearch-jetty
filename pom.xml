@@ -10,6 +10,7 @@
   <packaging>jar</packaging>
   <description>Jetty plugin for ElasticSearch</description>
   <inceptionYear>2011</inceptionYear>
+  <url>https://github.com/sonian/elasticsearch-jetty</url>
   <licenses>
     <license>
       <name>The Apache Software License, Version 2.0</name>
@@ -22,6 +23,45 @@
     <developerConnection>scm:git:git@github.com:sonian/elasticsearch-jetty.git</developerConnection>
     <url>http://github.com/sonian/elasticsearch-jetty</url>
   </scm>
+  <developers>
+    <developer>
+      <id>drewr</id>
+      <name>Drew Raines</name>
+      <email>drew@raines.me</email>
+      <url>http://drew.raines.me</url>
+      <organization>Sonian</organization>
+      <organizationUrl>http://www.sonian.com</organizationUrl>
+      <roles>
+        <role>developer</role>
+      </roles>
+      <timezone>-6</timezone>
+    </developer>
+    <developer>
+      <id>dakrone</id>
+      <name>Lee Hinman</name>
+      <email>lee@writequit.org</email>
+      <url>http://writequit.org</url>
+      <organization>Sonian</organization>
+      <organizationUrl>http://www.sonian.com</organizationUrl>
+      <roles>
+        <role>developer</role>
+      </roles>
+      <timezone>-7</timezone>
+    </developer>
+    <developer>
+      <id>imotov</id>
+      <name>Igor Motov</name>
+      <email>igor@motovs.org</email>
+      <url>http://www.motovs.org/igor</url>
+      <organization>Sonian</organization>
+      <organizationUrl>http://www.sonian.com</organizationUrl>
+      <roles>
+        <role>developer</role>
+      </roles>
+      <timezone>-5</timezone>
+    </developer>
+  </developers>
+
 
   <parent>
     <groupId>org.sonatype.oss</groupId>
