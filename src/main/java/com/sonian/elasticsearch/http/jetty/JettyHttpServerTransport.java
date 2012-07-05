@@ -17,9 +17,11 @@ package com.sonian.elasticsearch.http.jetty;
 
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.util.component.LifeCycle;
 import org.eclipse.jetty.util.log.Log;
 import org.eclipse.jetty.xml.XmlConfiguration;
 import org.elasticsearch.ElasticSearchException;
+import org.elasticsearch.client.Client;
 import org.elasticsearch.cluster.ClusterName;
 import org.elasticsearch.common.collect.MapBuilder;
 import org.elasticsearch.common.component.AbstractLifecycleComponent;
@@ -59,11 +61,15 @@ public class JettyHttpServerTransport extends AbstractLifecycleComponent<HttpSer
 
     private final String[] jettyConfig;
 
+    private final String jettyConfigServerId;
+
     private final Environment environment;
 
     private final ESLoggerWrapper loggerWrapper;
 
     private final ClusterName clusterName;
+
+    private final Client client;
 
     private volatile BoundTransportAddress boundAddress;
 
@@ -71,9 +77,9 @@ public class JettyHttpServerTransport extends AbstractLifecycleComponent<HttpSer
 
     private volatile HttpServerAdapter httpServerAdapter;
 
-
     @Inject
-    public JettyHttpServerTransport(Settings settings, Environment environment, NetworkService networkService, ESLoggerWrapper loggerWrapper, ClusterName clusterName) {
+    public JettyHttpServerTransport(Settings settings, Environment environment, NetworkService networkService,
+                                    ESLoggerWrapper loggerWrapper, ClusterName clusterName, Client client) {
         super(settings);
         this.environment = environment;
         this.networkService = networkService;
@@ -81,8 +87,10 @@ public class JettyHttpServerTransport extends AbstractLifecycleComponent<HttpSer
         this.bindHost = componentSettings.get("bind_host", settings.get("http.bind_host", settings.get("http.host")));
         this.publishHost = componentSettings.get("publish_host", settings.get("http.publish_host", settings.get("http.host")));
         this.jettyConfig = componentSettings.getAsArray("config", new String[]{"jetty.xml"});
+        this.jettyConfigServerId = componentSettings.get("server_id", "ESServer");
         this.loggerWrapper = loggerWrapper;
         this.clusterName = clusterName;
+        this.client = client;
     }
 
     @Override
@@ -97,19 +105,62 @@ public class JettyHttpServerTransport extends AbstractLifecycleComponent<HttpSer
             public boolean onPortNumber(int portNumber) {
                 try {
                     Server server = null;
-                    for (String configFile : jettyConfig) {
+                    XmlConfiguration lastXmlConfiguration = null;
+                    Object[] objs = new Object[jettyConfig.length];
+                    Map<String, String> esProperties = jettySettings(bindHost, portNumber);
+
+                    for (int i = 0; i < jettyConfig.length; i++) {
+                        String configFile = jettyConfig[i];
                         URL config = environment.resolveConfig(configFile);
                         XmlConfiguration xmlConfiguration = new XmlConfiguration(config);
-                        xmlConfiguration.getProperties().putAll(jettySettings(bindHost, portNumber));
-                        if (server == null) {
-                            server = (Server) xmlConfiguration.configure();
-                            server.setAttribute(TRANSPORT_ATTRIBUTE, JettyHttpServerTransport.this);
+
+                        // Make ids of objects created in early configurations available
+                        // in the later configurations
+                        if (lastXmlConfiguration != null) {
+                            xmlConfiguration.getIdMap().putAll(lastXmlConfiguration.getIdMap());
                         } else {
-                            xmlConfiguration.configure(server);
+                            xmlConfiguration.getIdMap().put("ESServerTransport", JettyHttpServerTransport.this);
+                            xmlConfiguration.getIdMap().put("ESClient", client);
+                        }
+                        // Inject elasticsearch properties
+                        xmlConfiguration.getProperties().putAll(esProperties);
+
+                        objs[i] = xmlConfiguration.configure();
+                        lastXmlConfiguration = xmlConfiguration;
+                    }
+                    // Find jetty Server with id  jettyConfigServerId
+                    Object serverObject = lastXmlConfiguration.getIdMap().get(jettyConfigServerId);
+                    if (serverObject != null) {
+                        if (serverObject instanceof Server) {
+                            server = (Server) serverObject;
+                        }
+                    } else {
+                        // For compatibility - if it's not available, find first available jetty Server
+                        for (Object obj : objs) {
+                            if (obj instanceof Server) {
+                                server = (Server) obj;
+                                break;
+                            }
                         }
                     }
-                    server.start();
+                    if (server == null) {
+                        logger.error("Cannot find server with id [{}] in configuration files [{}]", jettyConfigServerId, jettyConfig);
+                        lastException.set(new ElasticSearchException("Cannot find server with id " + jettyConfigServerId));
+                        return true;
+                    }
 
+                    // Keep it for now for backward compatibility with previous versions of jetty.xml
+                    server.setAttribute(TRANSPORT_ATTRIBUTE, JettyHttpServerTransport.this);
+
+                    // Start all lifecycle objects configured by xml configurations
+                    for (Object obj : objs) {
+                        if (obj instanceof LifeCycle) {
+                            LifeCycle lifeCycle = (LifeCycle) obj;
+                            if (!lifeCycle.isRunning()) {
+                                lifeCycle.start();
+                            }
+                        }
+                    }
                     jettyServer = server;
                     lastException.set(null);
                 } catch (BindException e) {

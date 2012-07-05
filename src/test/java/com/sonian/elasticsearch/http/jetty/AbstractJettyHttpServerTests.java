@@ -180,4 +180,5 @@ public class AbstractJettyHttpServerTests {
                 .execute().actionGet();
         client("server1").admin().cluster().prepareHealth().setWaitForGreenStatus().execute().actionGet();
     }
+
 }

@@ -59,7 +59,6 @@ public class JettyHttpServerAdapterTests extends AbstractJettyHttpServerTests {
     @SuppressWarnings({"unchecked"})
     @Test
     public void testIndexingAndSearching() throws Exception {
-
         Map<String, Object> settings = MapBuilder.<String, Object>newMapBuilder().put("settings",
                 MapBuilder.newMapBuilder().put("index",
                         MapBuilder.newMapBuilder()
@@ -86,7 +85,6 @@ public class JettyHttpServerAdapterTests extends AbstractJettyHttpServerTests {
     @SuppressWarnings({"unchecked"})
     @Test
     public void testIndexingCreationFailsWithoutPassword() throws Exception {
-
         Map<String, Object> settings = MapBuilder.<String, Object>newMapBuilder().put("settings",
                 MapBuilder.newMapBuilder().put("index",
                         MapBuilder.newMapBuilder()
