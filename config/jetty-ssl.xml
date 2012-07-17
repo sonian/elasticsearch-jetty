@@ -11,7 +11,7 @@
         <Arg>
             <New class="org.eclipse.jetty.server.ssl.SslSelectChannelConnector">
                 <Arg>
-                    <New class="org.eclipse.jetty.http.ssl.SslContextFactory">
+                    <New class="org.eclipse.jetty.util.ssl.SslContextFactory">
                         <Set name="keyStore"><Property name="es.config"/>/keystore</Set>
                         <Set name="keyStorePassword"><Property name="jetty.keystore_password"/></Set>
                         <Set name="keyManagerPassword"><Property name="jetty.keystore_password"/></Set>

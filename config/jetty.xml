@@ -19,7 +19,7 @@
         <Set name="refreshInterval">5</Set>
     </New>
 
-    <New class="org.eclipse.jetty.http.security.Constraint"
+    <New class="org.eclipse.jetty.util.security.Constraint"
          id="ReadWriteSecurityConstraint">
         <Set name="authenticate">true</Set>
         <Set name="name">BASIC</Set>
@@ -30,7 +30,7 @@
         </Set>
     </New>
 
-    <New class="org.eclipse.jetty.http.security.Constraint"
+    <New class="org.eclipse.jetty.util.security.Constraint"
          id="AdminSecurityConstraint">
         <Set name="authenticate">true</Set>
         <Set name="name">BASIC</Set>
@@ -41,22 +41,22 @@
         </Set>
     </New>
 
-    <New class="org.eclipse.jetty.http.security.Constraint"
+    <New class="org.eclipse.jetty.util.security.Constraint"
          id="NoneSecurityConstraint">
         <Set name="authenticate">false</Set>
     </New>
 
-    <New class="org.eclipse.jetty.http.security.Constraint"
+    <New class="org.eclipse.jetty.util.security.Constraint"
          id="ReadOnlyUserDataSecurityConstraint">
         <Set name="authenticate">false</Set>
     </New>
 
-    <New class="org.eclipse.jetty.http.security.Constraint"
+    <New class="org.eclipse.jetty.util.security.Constraint"
          id="ReadOnlyClusterDataSecurityConstraint">
         <Set name="authenticate">false</Set>
     </New>
 
-    <New class="org.eclipse.jetty.http.security.Constraint"
+    <New class="org.eclipse.jetty.util.security.Constraint"
          id="ForbiddenSecurityConstraint">
         <Set name="authenticate">true</Set>
     </New>

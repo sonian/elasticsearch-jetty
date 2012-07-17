@@ -16,7 +16,6 @@
 package com.sonian.elasticsearch.http.jetty.security;
 
 import org.eclipse.jetty.http.MimeTypes;
-import org.eclipse.jetty.http.security.Constraint;
 import org.eclipse.jetty.security.ConstraintMapping;
 import org.eclipse.jetty.security.HashLoginService;
 import org.eclipse.jetty.security.LoginService;
@@ -26,6 +25,7 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.DefaultHandler;
 import org.eclipse.jetty.testing.HttpTester;
 import org.eclipse.jetty.util.ByteArrayISO8859Writer;
+import org.eclipse.jetty.util.security.Constraint;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
