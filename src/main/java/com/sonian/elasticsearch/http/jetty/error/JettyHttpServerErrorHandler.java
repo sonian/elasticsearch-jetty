@@ -17,7 +17,7 @@ package com.sonian.elasticsearch.http.jetty.error;
 
 import org.eclipse.jetty.http.MimeTypes;
 import org.eclipse.jetty.server.Dispatcher;
-import org.eclipse.jetty.server.HttpConnection;
+import org.eclipse.jetty.server.AbstractHttpConnection;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.ErrorHandler;
 import org.eclipse.jetty.util.ByteArrayISO8859Writer;
@@ -33,7 +33,7 @@ public class JettyHttpServerErrorHandler extends ErrorHandler {
 
     @Override
     public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException {
-        HttpConnection connection = HttpConnection.getCurrentConnection();
+        AbstractHttpConnection connection = AbstractHttpConnection.getCurrentConnection();
         connection.getRequest().setHandled(true);
         String method = request.getMethod();
         response.setContentType(MimeTypes.TEXT_PLAIN_8859_1);

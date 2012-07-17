@@ -1,6 +1,6 @@
 package com.sonian.elasticsearch.http.jetty.security;
 
-import org.eclipse.jetty.http.security.Credential;
+import org.eclipse.jetty.util.security.Credential;
 import org.eclipse.jetty.security.MappedLoginService;
 import org.eclipse.jetty.server.UserIdentity;
 import org.eclipse.jetty.util.log.Log;

@@ -15,10 +15,10 @@
  */
 package com.sonian.elasticsearch.http.jetty.security;
 
-import org.eclipse.jetty.http.security.Constraint;
 import org.eclipse.jetty.security.*;
 import org.eclipse.jetty.server.*;
 import org.eclipse.jetty.util.TypeUtil;
+import org.eclipse.jetty.util.security.Constraint;
 
 import java.io.IOException;
 import java.util.*;
@@ -299,13 +299,13 @@ public class RestConstraintSecurityHandler extends SecurityHandler implements Co
         if (dataConstraint == null || dataConstraint == UserDataConstraint.None) {
             return true;
         }
-        HttpConnection connection = HttpConnection.getCurrentConnection();
+        AbstractHttpConnection connection = AbstractHttpConnection.getCurrentConnection();
         Connector connector = connection.getConnector();
 
         if (dataConstraint == UserDataConstraint.Integral) {
             if (connector.isIntegral(request))
                 return true;
-            if (connector.getConfidentialPort() > 0) {
+            if (connector.getIntegralPort() > 0) {
                 String url = connector.getIntegralScheme() + "://" + request.getServerName() + ":" + connector.getIntegralPort() + request.getRequestURI();
                 if (request.getQueryString() != null)
                     url += "?" + request.getQueryString();
@@ -371,6 +371,13 @@ public class RestConstraintSecurityHandler extends SecurityHandler implements Co
     @Override
     public void dump(Appendable out, String indent) throws IOException {
         dumpThis(out);
-        dump(out, indent, TypeUtil.asList(getHandlers()), getBeans(), Collections.singleton(roles), constraintMap.entrySet());
+        dump(out, indent,
+                Collections.singleton(getLoginService()),
+                Collections.singleton(getIdentityService()),
+                Collections.singleton(getAuthenticator()),
+                Collections.singleton(roles),
+                constraintMap.entrySet(),
+                getBeans(),
+                TypeUtil.asList(getHandlers()));
     }
 }
