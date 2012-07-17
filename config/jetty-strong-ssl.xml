@@ -1,0 +1,58 @@
+<?xml version="1.0"?>
+<!DOCTYPE Configure PUBLIC "-//Jetty//Configure//EN" "http://www.eclipse.org/jetty/configure.dtd">
+
+<Configure id="ESServer" class="org.eclipse.jetty.server.Server">
+
+    <!-- ============================================================================== -->
+    <!--  Add HTTPS connector with support only for ciphers that are known to be strong -->
+    <!-- ============================================================================== -->
+    <!-- See http://wiki.eclipse.org/Jetty/Howto/Configure_SSL for more details -->
+    <Call name="addConnector">
+        <Arg>
+            <New class="org.eclipse.jetty.server.ssl.SslSelectChannelConnector">
+                <Arg>
+                    <New class="org.eclipse.jetty.util.ssl.SslContextFactory">
+                        <Set name="keyStore"><Property name="es.config"/>/keystore</Set>
+                        <Set name="keyStorePassword"><Property name="jetty.keystore_password"/></Set>
+                        <Set name="keyManagerPassword"><Property name="jetty.keystore_password"/></Set>
+                        <Set name="trustStore"><Property name="es.config"/>/keystore</Set>
+                        <Set name="trustStorePassword"><Property name="jetty.keystore_password"/></Set>
+                        <!-- Allow only strong ciphers -->
+                        <Set name="includeCipherSuites">
+                            <Array type="java.lang.String">
+                                <Item>TLS_RSA_WITH_DES_CBC_SHA</Item>
+                                <Item>TLS_DHE_DSS_WITH_DES_CBC_SHA</Item>
+                                <Item>TLS_DHE_RSA_WITH_DES_CBC_SHA</Item>
+                                <Item>TLS_DHE_DSS_EXPORT1024_WITH_DES_CBC_SHA</Item>
+                                <Item>TLS_RSA_WITH_3DES_EDE_CBC_SHA</Item>
+                                <Item>TLS_RSA_WITH_RC4_128_SHA</Item>
+                                <Item>TLS_RSA_WITH_RC4_128_MD5</Item>
+                                <Item>TLS_DHE_DSS_WITH_3DES_EDE_CBC_SHA</Item>
+                                <Item>TLS_DHE_DSS_WITH_RC4_128_SHA</Item>
+                                <Item>TLS_DHE_RSA_WITH_3DES_EDE_CBC_SHA</Item>
+                                <Item>SSL_DHE_DSS_WITH_3DES_EDE_CBC_SHA</Item>
+                                <Item>SSL_DHE_RSA_WITH_3DES_EDE_CBC_SHA</Item>
+                                <Item>TLS_RSA_WITH_AES_128_CBC_SHA</Item>
+                                <Item>TLS_RSA_WITH_AES_256_CBC_SHA</Item>
+                                <Item>SSL_RSA_WITH_3DES_EDE_CBC_SHA</Item>
+                                <Item>SSL_RSA_WITH_RC4_128_MD5</Item>
+                                <Item>SSL_RSA_WITH_RC4_128_SHA</Item>
+                            </Array>
+                        </Set>
+                        <!-- Remove SSLv2 from the list of protocols -->
+                        <Set name="includeProtocols">
+                            <Array type="java.lang.String">
+                                <Item>SSLv3</Item>
+                                <Item>TLSv1</Item>
+                            </Array>
+                        </Set>
+                    </New>
+                </Arg>
+                <Set name="host"><Property name="jetty.ssl_bind_host"/></Set>
+                <Set name="port"><Property name="jetty.ssl_port"/></Set>
+                <Set name="maxIdleTime">600000</Set>
+            </New>
+        </Arg>
+    </Call>
+
+</Configure>
