@@ -1,0 +1,381 @@
+<?xml version="1.0"?>
+<!DOCTYPE Configure PUBLIC "-//Jetty//Configure//EN" "http://www.eclipse.org/jetty/configure.dtd">
+
+<Configure id="ESServer" class="org.eclipse.jetty.server.Server">
+
+
+    <!-- =========================================== -->
+    <!-- Constraint for index-level write operations -->
+    <!-- =========================================== -->
+    <New class="org.eclipse.jetty.util.security.Constraint"
+         id="ReadWriteSecurityConstraint">
+        <Set name="authenticate">true</Set>
+        <Set name="name">BASIC</Set>
+        <Set name="roles">
+            <Array type="java.lang.String">
+                <Item>readwrite</Item>
+            </Array>
+        </Set>
+    </New>
+
+    <!-- ============================================= -->
+    <!-- Constraint for cluster-level write operations -->
+    <!-- ============================================= -->
+    <New class="org.eclipse.jetty.util.security.Constraint"
+         id="AdminSecurityConstraint">
+        <Set name="authenticate">true</Set>
+        <Set name="name">BASIC</Set>
+        <Set name="roles">
+            <Array type="java.lang.String">
+                <Item>admin</Item>
+            </Array>
+        </Set>
+    </New>
+
+    <!-- ======================================== -->
+    <!--               No constraints             -->
+    <!-- ======================================== -->
+    <New class="org.eclipse.jetty.util.security.Constraint"
+         id="NoneSecurityConstraint">
+        <Set name="authenticate">false</Set>
+    </New>
+
+    <!-- ========================================== -->
+    <!-- Constraint for index-level read operations -->
+    <!-- ========================================== -->
+    <New class="org.eclipse.jetty.util.security.Constraint"
+         id="ReadOnlyUserDataSecurityConstraint">
+        <Set name="authenticate">false</Set>
+    </New>
+
+    <!-- ============================================ -->
+    <!-- Constraint for cluster-level read operations -->
+    <!-- ============================================ -->
+    <New class="org.eclipse.jetty.util.security.Constraint"
+         id="ReadOnlyClusterDataSecurityConstraint">
+        <Set name="authenticate">false</Set>
+    </New>
+
+    <!-- ======================================== -->
+    <!--                 No access                -->
+    <!-- ======================================== -->
+    <New class="org.eclipse.jetty.util.security.Constraint"
+         id="ForbiddenSecurityConstraint">
+        <Set name="authenticate">true</Set>
+    </New>
+
+    <Get id="OldHandler" name="handler"/>
+
+    <Set name="handler">
+        <New class="com.sonian.elasticsearch.http.jetty.security.RestConstraintSecurityHandler"
+             id="DefaultSecurityHandler">
+
+            <Set name="handler"><Ref id="OldHandler"/></Set>
+
+            <Set name="loginService">
+                <Ref id="DefaultLoginService"/>
+            </Set>
+            <Set name="realmName">DefaultRealm</Set>
+
+            <!-- ======================================== -->
+            <!--       ReadWrite DELETE operations        -->
+            <!-- ======================================== -->
+            <Call name="addConstraintMapping">
+                <Arg>
+                    <New class="org.eclipse.jetty.security.ConstraintMapping">
+                        <Set name="method">DELETE</Set>
+                        <Set name="pathSpec">
+                            /,/_template/{name},/{index},/{index}/_query,/{index}/{type},
+                            /{index}/{type}/_mapping,/{index}/{type}/_query,/{index}/{type}/{id},
+                            /{index}/_warmer,/{index}/_warmer/{name},/{index}/{type}/_warmer/{name}
+                        </Set>
+                        <Set name="constraint">
+                            <Ref id="ReadWriteSecurityConstraint"/>
+                        </Set>
+                    </New>
+                </Arg>
+            </Call>
+
+            <!-- ======================================== -->
+            <!--        Unrestricted GET operations       -->
+            <!-- ======================================== -->
+            <Call name="addConstraintMapping">
+                <Arg>
+                    <New class="org.eclipse.jetty.security.ConstraintMapping">
+                        <Set name="method">GET</Set>
+                        <Set name="pathSpec">
+                            /
+                        </Set>
+                        <Set name="constraint">
+                            <Ref id="NoneSecurityConstraint"/>
+                        </Set>
+                    </New>
+                </Arg>
+            </Call>
+
+            <!-- ======================================== -->
+            <!--    ReadOnlyUserData GET operations       -->
+            <!-- ======================================== -->
+            <Call name="addConstraintMapping">
+                <Arg>
+                    <New class="org.eclipse.jetty.security.ConstraintMapping">
+                        <Set name="method">GET</Set>
+                        <Set name="pathSpec">
+                            /_count,/_mget,/_search,/_search/scroll,/_search/scroll/{scroll_id},/{index}/_count,
+                            /{index}/_mget,/{index}/_search,/{index}/{type}/_count,/{index}/{type}/_mget,
+                            /{index}/{type}/_percolate,/{index}/{type}/_search,/{index}/{type}/{id},
+                            /{index}/{type}/{id}/_mlt,/_validate/query,/{index}/_validate/query,/{index}/{type}/_validate/query,
+                            /_msearch,/{index}/_msearch,/{index}/{type}/_msearch
+                        </Set>
+                        <Set name="constraint">
+                            <Ref id="ReadOnlyUserDataSecurityConstraint"/>
+                        </Set>
+                    </New>
+                </Arg>
+            </Call>
+
+            <!-- ======================================== -->
+            <!--     ReadOnlyClusterData GET operations   -->
+            <!-- ======================================== -->
+            <Call name="addConstraintMapping">
+                <Arg>
+                    <New class="org.eclipse.jetty.security.ConstraintMapping">
+                        <Set name="method">GET</Set>
+                        <Set name="pathSpec">
+                            /_aliases,/_cluster/*,/_cluster/*/*,/_cluster/*/*/*,/_cluster/*/*/*/*,/_mapping,/_segments,
+                            /_settings,/_stats,/_stats/*,/_stats/*/*,/_status,/_template/{name},/{index}/_aliases,
+                            /_analyze,/{index}/_analyze,/{index}/_mapping,/{index}/_ping/broadcast,/{index}/_ping/replication,
+                            /{index}/_segments,/{index}/_settings,/{index}/_stats,/{index}/_stats/*,/{index}/_stats/*/*,
+                            /{index}/_status,/{index}/{type}/_mapping,/{index}/{type}/{id}/_ping,
+                            /_nodes,/_nodes/*,/_nodes/*/*,/_nodes/*/*/*,/{index}/_warmer,/{index}/_warmer/{name},
+                            /{index}/{type}/_warmer/{name}
+                        </Set>
+                        <Set name="constraint">
+                            <Ref id="ReadOnlyClusterDataSecurityConstraint"/>
+                        </Set>
+                    </New>
+                </Arg>
+            </Call>
+
+            <!-- ======================================== -->
+            <!--         ReadWrite GET operations         -->
+            <!-- ======================================== -->
+            <Call name="addConstraintMapping">
+                <Arg>
+                    <New class="org.eclipse.jetty.security.ConstraintMapping">
+                        <Set name="method">GET</Set>
+                        <Set name="pathSpec">
+                            /_cache/clear,/_flush,/_optimize,/_refresh,/{index}/_cache/clear,/{index}/_flush,
+                            /{index}/_optimize,/{index}/_refresh
+                        </Set>
+                        <Set name="constraint">
+                            <Ref id="ReadWriteSecurityConstraint"/>
+                        </Set>
+                    </New>
+                </Arg>
+            </Call>
+
+            <!-- ======================================== -->
+            <!--      Unrestricted HEAD operations        -->
+            <!-- ======================================== -->
+            <Call name="addConstraintMapping">
+                <Arg>
+                    <New class="org.eclipse.jetty.security.ConstraintMapping">
+                        <Set name="method">HEAD</Set>
+                        <Set name="pathSpec">
+                            /
+                        </Set>
+                        <Set name="constraint">
+                            <Ref id="NoneSecurityConstraint"/>
+                        </Set>
+                    </New>
+                </Arg>
+            </Call>
+
+            <!-- ======================================== -->
+            <!--     ReadOnlyClusterData HEAD operations   -->
+            <!-- ======================================== -->
+            <Call name="addConstraintMapping">
+                <Arg>
+                    <New class="org.eclipse.jetty.security.ConstraintMapping">
+                        <Set name="method">HEAD</Set>
+                        <Set name="pathSpec">
+                            /{index}
+                        </Set>
+                        <Set name="constraint">
+                            <Ref id="ReadOnlyClusterDataSecurityConstraint"/>
+                        </Set>
+                    </New>
+                </Arg>
+            </Call>
+
+            <!-- ======================================== -->
+            <!--     ReadOnlyUserData HEAD operations   -->
+            <!-- ======================================== -->
+            <Call name="addConstraintMapping">
+                <Arg>
+                    <New class="org.eclipse.jetty.security.ConstraintMapping">
+                        <Set name="method">HEAD</Set>
+                        <Set name="pathSpec">
+                            /{index}/{type}/{id}
+                        </Set>
+                        <Set name="constraint">
+                            <Ref id="ReadOnlyUserDataSecurityConstraint"/>
+                        </Set>
+                    </New>
+                </Arg>
+            </Call>
+
+            <!-- ======================================== -->
+            <!--    ReadOnlyClusterData POST operations   -->
+            <!-- ======================================== -->
+            <Call name="addConstraintMapping">
+                <Arg>
+                    <New class="org.eclipse.jetty.security.ConstraintMapping">
+                        <Set name="method">POST</Set>
+                        <Set name="pathSpec">
+                            /_analyze,/{index}/_analyze
+                        </Set>
+                        <Set name="constraint">
+                            <Ref id="ReadOnlyClusterDataSecurityConstraint"/>
+                        </Set>
+                    </New>
+                </Arg>
+            </Call>
+
+            <!-- ======================================== -->
+            <!--    ReadOnlyUserData POST operations      -->
+            <!-- ======================================== -->
+            <Call name="addConstraintMapping">
+                <Arg>
+                    <New class="org.eclipse.jetty.security.ConstraintMapping">
+                        <Set name="method">POST</Set>
+                        <Set name="pathSpec">
+                            /_count,/_mget,/_search,/_search/scroll,/_search/scroll/{scroll_id},/{index}/_count,
+                            /{index}/_mget,/{index}/_search,/{index}/{type}/_count,/{index}/{type}/_mget,
+                            /{index}/{type}/_percolate,/{index}/{type}/_search,/{index}/{type}/{id}/_mlt,
+                            /_validate/query,/{index}/_validate/query,/{index}/{type}/_validate/query,
+                            /_msearch,/{index}/_msearch,/{index}/{type}/_msearch
+                        </Set>
+                        <Set name="constraint">
+                            <Ref id="ReadOnlyUserDataSecurityConstraint"/>
+                        </Set>
+                    </New>
+                </Arg>
+            </Call>
+
+            <!-- ======================================== -->
+            <!--         ReadWrite POST operations        -->
+            <!-- ======================================== -->
+            <Call name="addConstraintMapping">
+                <Arg>
+                    <New class="org.eclipse.jetty.security.ConstraintMapping">
+                        <Set name="method">POST</Set>
+                        <Set name="pathSpec">
+                            /_aliases,/_bulk,/_cache/clear,/_flush,/_gateway/snapshot,/_optimize,/_refresh,
+                            /_template/{name},/{index},/{index}/_cache/clear,/{index}/_close,/{index}/_flush,
+                            /{index}/_gateway/snapshot,/{index}/_mapping,/{index}/_open,/{index}/_optimize,
+                            /{index}/_refresh,/{index}/{type},/{index}/{type}/_mapping,/{index}/{type}/{id},
+                            /{index}/{type}/{id}/_create,/{index}/_bulk,/{index}/{type}/_bulk,/{index}/{type}/{id}/_update
+                        </Set>
+                        <Set name="constraint">
+                            <Ref id="ReadWriteSecurityConstraint"/>
+                        </Set>
+                    </New>
+                </Arg>
+            </Call>
+
+            <!-- ======================================== -->
+            <!--         Admin POST operations            -->
+            <!-- ======================================== -->
+            <Call name="addConstraintMapping">
+                <Arg>
+                    <New class="org.eclipse.jetty.security.ConstraintMapping">
+                        <Set name="method">POST</Set>
+                        <Set name="pathSpec">
+                            /_cluster/nodes/_restart,/_cluster/nodes/_shutdown,
+                            /_cluster/nodes/{nodeId}/_restart,/_cluster/nodes/{nodeId}/_shutdown,
+                            /_shutdown,/_cluster/reroute
+                        </Set>
+                        <Set name="constraint">
+                            <Ref id="AdminSecurityConstraint"/>
+                        </Set>
+                    </New>
+                </Arg>
+            </Call>
+
+            <!-- ======================================== -->
+            <!--         ReadWrite PUT operations         -->
+            <!-- ======================================== -->
+            <Call name="addConstraintMapping">
+                <Arg>
+                    <New class="org.eclipse.jetty.security.ConstraintMapping">
+                        <Set name="method">PUT</Set>
+                        <Set name="pathSpec">
+                            /_bulk,/_template/{name},/{index},/{index}/_mapping,/{index}/_settings,/{index}/{type}/_mapping,
+                            /{index}/{type}/{id},/{index}/{type}/{id}/_create,/{index}/_bulk,/{index}/{type}/_bulk,
+                            /{index}/_warmer/{name},/{index}/{type}/_warmer/{name}
+                        </Set>
+                        <Set name="constraint">
+                            <Ref id="ReadWriteSecurityConstraint"/>
+                        </Set>
+                    </New>
+                </Arg>
+            </Call>
+
+            <!-- ======================================== -->
+            <!--          Admin PUT operations            -->
+            <!-- ======================================== -->
+            <Call name="addConstraintMapping">
+                <Arg>
+                    <New class="org.eclipse.jetty.security.ConstraintMapping">
+                        <Set name="method">PUT</Set>
+                        <Set name="pathSpec">
+                            /_cluster/settings,/_settings
+                        </Set>
+                        <Set name="constraint">
+                            <Ref id="AdminSecurityConstraint"/>
+                        </Set>
+                    </New>
+                </Arg>
+            </Call>
+
+
+            <!-- ======================================== -->
+            <!--         Plugin GET operations            -->
+            <!-- ======================================== -->
+            <Call name="addConstraintMapping">
+                <Arg>
+                    <New class="org.eclipse.jetty.security.ConstraintMapping">
+                        <Set name="method">GET</Set>
+                        <Set name="pathSpec">
+                            /_plugin/*,/_plugin/*/*,/_plugin/*/*/*,/_plugin/*/*/*/*,/_plugin/*/*/*/*/*,
+                            /_plugin/*/*/*/*/*/*,/_plugin/*/*/*/*/*/*/*,/_plugin/*/*/*/*/*/*/*/*,
+                            /_plugin/*/*/*/*/*/*/*/*/*, /_plugin/*/*/*/*/*/*/*/*/*/*
+                        </Set>
+                        <Set name="constraint">
+                            <Ref id="ReadOnlyClusterDataSecurityConstraint"/>
+                        </Set>
+                    </New>
+                </Arg>
+            </Call>
+
+
+            <!-- ======================================== -->
+            <!--         Prohibit everything else         -->
+            <!-- ======================================== -->
+            <Call name="addConstraintMapping">
+                <Arg>
+                    <New class="org.eclipse.jetty.security.ConstraintMapping">
+                        <Set name="pathSpec">*</Set>
+                        <Set name="constraint">
+                            <Ref id="ForbiddenSecurityConstraint"/>
+                        </Set>
+                    </New>
+                </Arg>
+            </Call>
+
+        </New>
+    </Set>
+
+</Configure>

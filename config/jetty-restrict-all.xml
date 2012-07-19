@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<!DOCTYPE Configure PUBLIC "-//Jetty//Configure//EN" "http://www.eclipse.org/jetty/configure.dtd">
+
+<Configure id="ESServer" class="org.eclipse.jetty.server.Server">
+
+
+    <!-- ======================================== -->
+    <!--   Single Constraint for all operations   -->
+    <!-- ======================================== -->
+    <New class="org.eclipse.jetty.util.security.Constraint"
+         id="DefaultSecurityConstraint">
+        <Set name="authenticate">true</Set>
+        <Set name="name">BASIC</Set>
+        <Set name="roles">
+            <Array type="java.lang.String">
+                <Item>readwrite</Item>
+            </Array>
+        </Set>
+    </New>
+
+    <Get id="OldHandler" name="handler"/>
+
+    <Set name="handler">
+        <New class="com.sonian.elasticsearch.http.jetty.security.RestConstraintSecurityHandler"
+             id="DefaultSecurityHandler">
+
+            <Set name="handler"><Ref id="OldHandler"/></Set>
+
+            <Set name="loginService">
+                <!-- from jetty-es-auth.xml or jetty-hash-auth.xml -->
+                <Ref id="DefaultLoginService"/>
+            </Set>
+
+            <Set name="realmName">DefaultRealm</Set>
+
+            <!-- ======================================== -->
+            <!--  All operations require authentication   -->
+            <!-- ======================================== -->
+            <Call name="addConstraintMapping">
+                <Arg>
+                    <New class="org.eclipse.jetty.security.ConstraintMapping">
+                        <Set name="pathSpec">*</Set>
+                        <Set name="constraint">
+                            <Ref id="DefaultSecurityConstraint"/>
+                        </Set>
+                    </New>
+                </Arg>
+            </Call>
+
+        </New>
+    </Set>
+
+</Configure>

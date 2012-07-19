@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<!DOCTYPE Configure PUBLIC "-//Jetty//Configure//EN" "http://www.eclipse.org/jetty/configure.dtd">
+
+<Configure id="ESServer" class="org.eclipse.jetty.server.Server">
+
+    <Get id="OldHandler" name="handler"/>
+
+    <Set name="handler">
+        <New id="GzipHandler" class="org.eclipse.jetty.server.handler.GzipHandler">
+            <Set name="handler">
+                <Ref id="OldHandler"/>
+            </Set>
+        </New>
+    </Set>
+
+</Configure>
