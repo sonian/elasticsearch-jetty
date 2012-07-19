@@ -3,8 +3,6 @@ package com.sonian.elasticsearch.http.jetty.security;
 import com.sonian.elasticsearch.http.jetty.AbstractJettyHttpServerTests;
 import com.sonian.elasticsearch.http.jetty.HttpClient;
 import com.sonian.elasticsearch.http.jetty.HttpClientResponse;
-import org.elasticsearch.ElasticSearchException;
-import org.elasticsearch.common.collect.MapBuilder;
 import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
@@ -13,13 +11,10 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
-import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 
 /**
  * @author drewr
@@ -29,7 +24,7 @@ public class ESLoginServiceTests extends AbstractJettyHttpServerTests {
     public void setup() {
         startNode("server1", ImmutableSettings
                 .settingsBuilder()
-                .put("sonian.elasticsearch.http.jetty.config", "jetty.xml,jetty-esauth.xml"));
+                .put("sonian.elasticsearch.http.jetty.config", "jetty.xml,jetty-es-auth.xml,jetty-restrict-writes.xml"));
     }
 
     @AfterMethod

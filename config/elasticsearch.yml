@@ -88,13 +88,4 @@ sonian.elasticsearch.http.jetty:
     port: 9200
     ssl_port: 9443
     keystore_password: "OBF:1nc01vuz1w8f1w1c1rbu1rac1w261w9b1vub1ndq"
-
-
-# Alternative minimal configurations
-#    config: jetty-minimal.xml
-
-# Minimal configurations with ssl
-#    config: jetty-minimal.xml,jetty-ssl.xml
-
-# Full configuration with ssl:
-#    config: jetty.xml,jetty-ssl.xml
+    config: jetty.xml,jetty-strong-ssl.xml,jetty-hash-auth.xml,jetty-restrict-writes.xml,jetty-gzip.xml

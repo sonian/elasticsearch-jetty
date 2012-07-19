@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<!DOCTYPE Configure PUBLIC "-//Jetty//Configure//EN" "http://www.eclipse.org/jetty/configure.dtd">
+
+<Configure id="ESServer" class="org.eclipse.jetty.server.Server">
+
+    <!-- Create ESLoginService -->
+    <Call name="addBean">
+        <Arg>
+            <New class="com.sonian.elasticsearch.http.jetty.security.ESLoginService"
+                 id="DefaultLoginService">
+                <Set name="client"><Ref id="ESClient"/></Set>
+                <Set name="name">DefaultRealm</Set>
+                <Set name="authIndex">auth</Set>
+                <Set name="authType">user</Set>
+                <Set name="cacheTime">300000</Set> <!-- millis -->
+                <Call name="start"/>
+            </New>
+        </Arg>
+    </Call>
+
+</Configure>

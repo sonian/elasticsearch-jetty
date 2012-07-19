@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<!DOCTYPE Configure PUBLIC "-//Jetty//Configure//EN" "http://www.eclipse.org/jetty/configure.dtd">
+
+<Configure id="ESServer" class="org.eclipse.jetty.server.Server">
+
+    <!-- Create new file based auth service that uses realm.properties file in elasticsearch config directory -->
+    <Call name="addBean">
+        <Arg>
+            <New class="org.eclipse.jetty.security.HashLoginService"
+                 id="DefaultLoginService">
+                <Set name="name">DefaultRealm</Set>
+                <Set name="config"><Property name="es.config"/>/realm.properties</Set>
+                <Set name="refreshInterval">5</Set>
+            </New>
+        </Arg>
+    </Call>
+
+</Configure>
