@@ -70,7 +70,7 @@
   </parent>
 
   <properties>
-    <elasticsearch.version>0.19.2</elasticsearch.version>
+    <elasticsearch.version>0.19.8</elasticsearch.version>
     <jetty.version>8.1.4.v20120524</jetty.version>
     <github.global.server>github</github.global.server>
   </properties>
