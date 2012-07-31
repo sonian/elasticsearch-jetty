@@ -145,7 +145,7 @@ public class LoggingFilterHttpServerAdapter implements FilterHttpServerAdapter {
             params = mapToString(request.params());
             timestamp = System.currentTimeMillis();
             if(logBody) {
-                content = request.contentAsString();
+                content = request.content().toUtf8();
             } else {
                 content = null;
             }

@@ -15,7 +15,8 @@
  */
 package com.sonian.elasticsearch.http.jetty;
 
-import org.elasticsearch.common.Unicode;
+import org.elasticsearch.common.bytes.BytesArray;
+import org.elasticsearch.common.bytes.BytesReference;
 import org.elasticsearch.common.io.Streams;
 import org.elasticsearch.http.HttpRequest;
 import org.elasticsearch.rest.support.AbstractRestRequest;
@@ -39,7 +40,7 @@ public class JettyHttpServerRestRequest extends AbstractRestRequest implements H
 
     private final Map<String, String> params;
 
-    private final byte[] content;
+    private final BytesReference content;
     
     private final String opaqueId;
 
@@ -53,7 +54,7 @@ public class JettyHttpServerRestRequest extends AbstractRestRequest implements H
             RestUtils.decodeQueryString(request.getQueryString(), 0, params);
         }
 
-        content = Streams.copyToByteArray(request.getInputStream());
+        content = new BytesArray(Streams.copyToByteArray(request.getInputStream()));
         request.setAttribute(REQUEST_CONTENT_ATTRIBUTE, content);
     }
 
@@ -81,27 +82,16 @@ public class JettyHttpServerRestRequest extends AbstractRestRequest implements H
     }
 
     @Override public boolean hasContent() {
-        return content.length > 0;
+        return content.length() > 0;
     }
 
     @Override public boolean contentUnsafe() {
         return false;
     }
 
-    @Override public byte[] contentByteArray() {
-        return content;
-    }
-
-    @Override public int contentByteArrayOffset() {
-        return 0;
-    }
-
-    @Override public int contentLength() {
-        return content.length;
-    }
-
-    @Override public String contentAsString() {
-        return Unicode.fromBytes(contentByteArray(), contentByteArrayOffset(), contentLength());
+    @Override
+    public BytesReference content() {
+        return content;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @Override public String header(String name) {
