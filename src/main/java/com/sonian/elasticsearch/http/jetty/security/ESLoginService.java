@@ -114,19 +114,28 @@ public class ESLoginService extends MappedLoginService {
             }
         }
 
-        return super.login(username, credentials);
+        UserIdentity u = super.login(username, credentials);
+        if (u != null) {
+            Log.info("authenticating user [{}]", username);
+        } else {
+            Log.info("did not find user [{}]", username);
+        }
+        return u;
     }
 
     @Override
     public UserIdentity loadUser(String user) {
+        Log.debug("attempting to load user [{}]", user);
         try {
             GetResponse response = client.prepareGet(authIndex, authType, user)
                     .setFields(passwordField, rolesField)
                     .execute().actionGet();
             if (response.exists()) {
+                Log.debug("user [{}] exists; looking for credentials...", user);
                 Credential credential = null;
                 GetField passwordGetField = response.field(passwordField);
                 if (passwordGetField != null) {
+                    Log.debug("user [{}] using password auth", user);
                     credential = Credential.getCredential((String) passwordGetField.value());
                 }
                 String[] roles = getStringValues(response.field(rolesField));
