@@ -2,7 +2,7 @@ h1. Jetty Plugin
 
 h2. Compatibility
 
-The following table shows the versions of elasticsearch and jetty that Jetty Plugin was built with. 
+The following table shows the versions of elasticsearch and jetty that Jetty Plugin was built with.
 
 |_. Jetty Plugin |_.  Elasticsearch    |_.  Jetty  |
 | 0.19.6-master | 0.19.8  | 8.1.4.v20120524   |
@@ -12,7 +12,7 @@ The following table shows the versions of elasticsearch and jetty that Jetty Plu
 
 h2. Overview
 
-The elasticsearch-jetty plugin brings full power of Jetty and adds several new features to elasticsearch. With this plugin elasticsearch can now handle SSL connections, support basic authentication, and log all or some incoming requests in plain text or json formats. 
+The elasticsearch-jetty plugin brings full power of Jetty and adds several new features to elasticsearch. With this plugin elasticsearch can now handle SSL connections, support basic authentication, and log all or some incoming requests in plain text or json formats.
 
 h2. Installation and Configuration
 
@@ -21,7 +21,7 @@ h3. Installation
 The elasticsearch-jetty plugin can be installed as any other ES plugin using bin/plugin utility:
 
 <pre>
-bin/plugin -install sonian/elasticsearch-jetty/0.19.7
+$ bin/plugin -install sonian/elasticsearch-jetty/0.19.8
 </pre>
 
 The core of the plugin is JettyHttpServerTransport module that works as a replacement for NettyHttpServerTransport. To enable the elasticsearch-jetty plugin, the default netty http transport should be replaced with jetty http transport by adding the following line to @elasticsearch.yml@.
@@ -29,6 +29,18 @@ The core of the plugin is JettyHttpServerTransport module that works as a replac
 <pre>
 http.type: com.sonian.elasticsearch.http.jetty.JettyHttpServerTransportModule
 </pre>
+
+The elasticsearch-jetty plugin adds @Server: Jetty(8.1.4.v20120524)@ header to all responses. So, it's possible to verify that jetty plugin is running by checking the response headers using the following curl command:
+
+<pre>
+$ curl -I "http://localhost:9200/"
+HTTP/1.1 200 OK
+Content-Type: text/plain;charset=UTF-8
+Access-Control-Allow-Origin: *
+Content-Length: 0
+Server: Jetty(8.1.4.v20120524)
+</pre>
+
 
 h3. Configuration Files
 
@@ -39,11 +51,11 @@ The embedded jetty is configured using standard @jetty-*.xml@ files. The list of
 * elasticsearch classpath
 * config directory in elasticsearch classpath
 
-If the @sonian.elasticsearch.http.jetty.config@ setting is not set, the elasticsearch-jetty plugin tries to locate and load a single file called @jetty.xml@. 
+If the @sonian.elasticsearch.http.jetty.config@ setting is not set, the elasticsearch-jetty plugin tries to locate and load a single file called @jetty.xml@.
 
 The elasticsearch-jetty plugin comes with several generic @jetty-*.xml@ configuration files that can be used to simplify the plugin setup. These files can be found in the @plugins/jetty/config@ directory.
 
-* <a href="https://github.com/sonian/elasticsearch-jetty/blob/master/config/jetty.xml">jetty.xml</a> - basic elasticsearch configuration file that should be always the first file in the list of config files. 
+* <a href="https://github.com/sonian/elasticsearch-jetty/blob/master/config/jetty.xml">jetty.xml</a> - basic elasticsearch configuration file that should be always the first file in the list of config files.
 * <a href="https://github.com/sonian/elasticsearch-jetty/blob/master/config/jetty-hash-auth.xml">jetty-hash-auth.xml</a> - adds login service for basic file-based authentication.
 * <a href="https://github.com/sonian/elasticsearch-jetty/blob/master/config/jetty-restrict-all.xml">jetty-restrict-all.xml</a> and <a href="https://github.com/sonian/elasticsearch-jetty/blob/master/config/jetty-restrict-writes.xml">jetty-restrict-writes.xml</a> - set of security constraint that requires password for *all* or *write* access to elasticsearch. Only one of these files should be used at a time.
 * <a href="https://github.com/sonian/elasticsearch-jetty/blob/master/config/jetty-ssl.xml">jetty-ssl.xml</a> and <a href="https://github.com/sonian/elasticsearch-jetty/blob/master/config/jetty-strong-ssl.xml">jetty-strong-ssl.xml</a> - both files add an SSL connector, the second file limits ciphers that SSL connector can use to only known strong ciphers. Only one of these files should be used at a time.
@@ -73,7 +85,7 @@ username: password[,rolename ...]
 
 For example:
 
-@config/realm.properties@ 
+@config/realm.properties@
 
 <pre>
 superuser: Adm1n,admin,readwrite
@@ -84,7 +96,7 @@ The passwords can be obfuscated or MD5 hashed using Jetty <a href="http://wiki.e
 
 After the login service is configured, the next step is to set security constraints. The elasticsearch-jetty plugin comes with two sample constraints configuration files: <a href="https://github.com/sonian/elasticsearch-jetty/blob/master/config/jetty-restrict-all.xml">jetty-restrict-all.xml</a> and <a href="https://github.com/sonian/elasticsearch-jetty/blob/master/config/jetty-restrict-writes.xml">jetty-restrict-writes.xml</a> that demonstrate two different approaches to controlling access to elasticsearch. The first file requires password for any access to elasticsearch, and the second one uses more granular restrictions depending on the type of the access.
 
-The following settings in @elasticsearch.yml@ will enable granular restrictions: 
+The following settings in @elasticsearch.yml@ will enable granular restrictions:
 
 <pre>
 http.type: com.sonian.elasticsearch.http.jetty.JettyHttpServerTransportModule
@@ -111,7 +123,7 @@ The elasticsearch-jetty plugin contains two versions of the HTTP Server Transpor
 In order to setup request logging, elasticsearch should be switched to use @FilterHttpTransportModule@. It can be done by the following setting:
 
 <pre>
-http.type: com.sonian.elasticsearch.http.jetty.FilterHttpTransportModule
+http.type: com.sonian.elasticsearch.http.filter.FilterHttpServerTransportModule
 </pre>
 
 Then @FilterHttpTransportModule@ has to be configured with an appropriate filter:
@@ -123,31 +135,31 @@ sonian.elasticsearch.http.filter:
         # Request logging filter
         logging:
             type: com.sonian.elasticsearch.http.filter.logging.LoggingFilterHttpServerAdapter
-            logger: mylogger
+            logger: request
             format: text
             level: INFO
             log_body: false
 </pre>
 
-This configuration will create one logger with the name @mylogger@ that will log all incoming requests in plain text format on the INFO level and request bodies will not be logged. By default, this new logger will log all messages into the same log file as a standard elasticsearch logger. It's possible to redirect requests logging into a separate log file. The following @logging.yml@ configuration specifies that logger @mylogger@ logs on the @INFO@ level and above using appender @requestlog@, which is the same @dailyRollingFile@ appender that is used by elasticsearch, but it logs into @logs/elasticsearch-request.log@ instead of @logs/elasticsearch.log@ file. Dots "........." in the example below indicate existing lines in the @logger@ and @appender@ sections, that should be left intact.
+This configuration will create one logger with the name @request@ that will log all incoming requests in plain text format on the INFO level and request bodies will not be logged. By default, this new logger will log all messages into the same log file as a standard elasticsearch logger. It's possible to redirect requests logging into a separate log file. The following @logging.yml@ configuration specifies that logger @request@ logs on the @INFO@ level and above using appender @request_log_file@, which is the same @dailyRollingFile@ appender that is used by elasticsearch, but it logs into @logs/elasticsearch-request.log@ instead of @logs/elasticsearch.log@ file. Dots "........." in the example below indicate existing lines in the @logger@ and @appender@ sections, that should be left intact.
 
 <pre>
 logger:
   ........
-  mylogger: INFO, requestlog
+  request: INFO, request_log_file
 
 additivity:
-  mylogger: false
+  request: false
 
 appender:
   .........
-  requestlog:
-    type: dailyRollingFile
-    file: ${path.logs}/${cluster.name}-request.log
-    datePattern: "'.'yyyy-MM-dd"
-    layout:
-      type: pattern
-      conversionPattern: "[%d{ABSOLUTE}] %m%n"
+  request_log_file:
+      type: dailyRollingFile
+      file: ${path.logs}/${cluster.name}_requests.log
+      datePattern: "'.'yyyy-MM-dd"
+      layout:
+        type: pattern
+        conversionPattern: "[%d{ABSOLUTE}] %m%n"
 </pre>
 
 Not all requests are equally important. For example, @/_cluster/health@ requests can be ignored, and body of a @/_search@ request is an important part of the request. So, the @LoggingFilterHttpServerAdapter@ can be configured to treat different request in different ways. The following @elasticsearch.yml@ fragment will cause cluster health, state, info and stats requests to be logged on the @TRACE@ level, while all @_search@ and @_count@ requests will be logged with request bodies.
@@ -158,7 +170,7 @@ sonian.elasticsearch.http.filter:
     http_filter:
         # Request logging filter
         logging:
-            logger: mylogger
+            logger: request
             format: text
             type: com.sonian.elasticsearch.http.filter.logging.LoggingFilterHttpServerAdapter
             level: INFO
@@ -211,9 +223,9 @@ h2. Advanced Configuration
 
 h3. Custom configuration
 
-The elasticsearch-jetty plugin comes with several sample @jetty-*.xml@ files, but it can be used with entirely custom configuration. For the plugin to function correctly the custom configuration has to only satisfy the following two requirements:
+The elasticsearch-jetty plugin comes with several sample @jetty*.xml@ files, but it can be used with entirely custom configuration. For the plugin to function correctly the custom configuration has to only satisfy the following two requirements:
 
-* The custom configuration has to create at least one Jetty server. 
+* The custom configuration has to create at least one Jetty server.
 * The first connector of the created Jetty server has to be Internet Socket Connector. If the custom configuration creates more than one Jetty Server, the plugin tries to find server with ID specified in the @sonian.elasticsearch.http.jetty.server_id@, which is @ESServer@ by default. If such server doesn't exists, elasticsearch picks the Jetty Server that was created first.
 * All elasticsearch requests have to be handled by @JettyHttpServerTransportHandler@ that has to be configured the following way:
 
@@ -242,7 +254,7 @@ It also exposes two elaticsearch objects using the following ids:
 
 h2. User group
 
-Join <a href="https://groups.google.com/forum/#!forum/elasticsearch-jetty">elasticsearch-jetty group</a> for questions and discussions related to this plugin. 
+Join <a href="https://groups.google.com/forum/#!forum/elasticsearch-jetty">elasticsearch-jetty group</a> for questions and discussions related to this plugin.
 
 
 
