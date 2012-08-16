@@ -5,13 +5,13 @@
         <format>zip</format>
     </formats>
     <includeBaseDirectory>false</includeBaseDirectory>
-    <!-- copy all jetty-*.xml configuration file into plugin zip -->
+    <!-- copy all jetty*.xml configuration file into plugin zip -->
     <fileSets>
         <fileSet>
             <directory>config</directory>
             <outputDirectory>/config</outputDirectory>
             <includes>
-                <include>jetty-*.xml</include>
+                <include>jetty*.xml</include>
             </includes>
         </fileSet>
     </fileSets>
