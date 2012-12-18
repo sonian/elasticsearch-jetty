@@ -78,7 +78,8 @@ public class JettyHttpServerAdapterTests extends AbstractJettyHttpServerTests {
         response = httpClient("server1", "user", "Passw0rd").request("PUT", "testidx/msg/1?refresh=true", data);
         assertThat((Boolean) response.get("ok"), equalTo(true));
 
-        response = httpClient("server1").request("GET", "testidx/msg/_search?q=*:*");
+        // Using _all here to work around https://github.com/elasticsearch/elasticsearch/issues/2486
+        response = httpClient("server1").request("GET", "testidx/msg/_search?q=_all:*");
         assertThat((Integer)((Map<String, Object>) response.get("hits")).get("total"), equalTo(1));
     }
 
@@ -114,7 +115,8 @@ public class JettyHttpServerAdapterTests extends AbstractJettyHttpServerTests {
         response = httpClient("server1").request("PUT", "testidx/msg/2?refresh=true", data);
         assertThat(response.errorCode(), equalTo(HttpURLConnection.HTTP_UNAUTHORIZED));
 
-        response = httpClient("server1").request("GET", "testidx/msg/_search?q=*:*");
+        // Using _all here to work around https://github.com/elasticsearch/elasticsearch/issues/2486
+        response = httpClient("server1").request("GET", "testidx/msg/_search?q=_all:*");
         assertThat((Integer)((Map<String, Object>) response.get("hits")).get("total"), equalTo(1));
     }
 
