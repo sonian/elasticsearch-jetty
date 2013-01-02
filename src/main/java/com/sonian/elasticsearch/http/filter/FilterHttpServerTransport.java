@@ -24,6 +24,7 @@ import org.elasticsearch.common.inject.Inject;
 import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.BoundTransportAddress;
+import org.elasticsearch.http.HttpInfo;
 import org.elasticsearch.http.HttpServerAdapter;
 import org.elasticsearch.http.HttpServerTransport;
 import org.elasticsearch.http.HttpStats;
@@ -107,6 +108,11 @@ public class FilterHttpServerTransport extends AbstractLifecycleComponent<HttpSe
     public BoundTransportAddress boundAddress
             () {
         return filteredHttpServerTransport.boundAddress();
+    }
+
+    @Override
+    public HttpInfo info() {
+        return new HttpInfo(null, 0);
     }
 
     @Override
