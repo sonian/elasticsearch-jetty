@@ -32,10 +32,7 @@ import org.elasticsearch.common.transport.BoundTransportAddress;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.common.transport.PortsRange;
 import org.elasticsearch.env.Environment;
-import org.elasticsearch.http.BindHttpException;
-import org.elasticsearch.http.HttpServerAdapter;
-import org.elasticsearch.http.HttpServerTransport;
-import org.elasticsearch.http.HttpStats;
+import org.elasticsearch.http.*;
 import org.elasticsearch.transport.BindTransportException;
 
 import java.io.File;
@@ -231,6 +228,11 @@ public class JettyHttpServerTransport extends AbstractLifecycleComponent<HttpSer
     @Override
     public BoundTransportAddress boundAddress() {
         return this.boundAddress;
+    }
+
+    @Override
+    public HttpInfo info() {
+        return new HttpInfo(null, 0);
     }
 
     @Override
