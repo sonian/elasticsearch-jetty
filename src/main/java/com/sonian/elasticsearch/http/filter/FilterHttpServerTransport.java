@@ -112,7 +112,7 @@ public class FilterHttpServerTransport extends AbstractLifecycleComponent<HttpSe
 
     @Override
     public HttpInfo info() {
-        return new HttpInfo(null, 0);
+        return new HttpInfo(boundAddress(), 0);
     }
 
     @Override
