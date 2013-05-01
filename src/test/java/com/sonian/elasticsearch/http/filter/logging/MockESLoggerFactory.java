@@ -20,6 +20,7 @@ import org.elasticsearch.common.logging.ESLoggerFactory;
 import org.elasticsearch.common.logging.Loggers;
 import org.elasticsearch.common.logging.log4j.Log4jESLoggerFactory;
 
+import java.lang.reflect.Method;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
@@ -83,6 +84,19 @@ public class MockESLoggerFactory extends ESLoggerFactory {
             return messages.poll(timeout, unit);
         }
 
+    }
+
+    @Override
+    protected ESLogger rootLogger() {
+        Method m;
+        try {
+            m = realFactory.getClass().getMethod("rootLogger");
+            return (ESLogger) m.invoke(realFactory);
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }
