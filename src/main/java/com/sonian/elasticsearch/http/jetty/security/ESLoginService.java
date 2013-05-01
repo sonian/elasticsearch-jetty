@@ -130,15 +130,15 @@ public class ESLoginService extends MappedLoginService {
             GetResponse response = client.prepareGet(authIndex, authType, user)
                     .setFields(passwordField, rolesField)
                     .execute().actionGet();
-            if (response.exists()) {
+            if (response.isExists()) {
                 Log.debug("user [{}] exists; looking for credentials...", user);
                 Credential credential = null;
-                GetField passwordGetField = response.field(passwordField);
+                GetField passwordGetField = response.getField(passwordField);
                 if (passwordGetField != null) {
                     Log.debug("user [{}] using password auth", user);
-                    credential = Credential.getCredential((String) passwordGetField.value());
+                    credential = Credential.getCredential((String) passwordGetField.getValue());
                 }
-                String[] roles = getStringValues(response.field(rolesField));
+                String[] roles = getStringValues(response.getField(rolesField));
                 return putUser(user, credential, roles);
             }
         } catch (IndexMissingException e) {
@@ -152,9 +152,9 @@ public class ESLoginService extends MappedLoginService {
     private String[] getStringValues(GetField field) {
         List<String> values = newArrayList();
         if (field != null) {
-            for(Object value : field.values()) {
-                if (field.value() instanceof Iterable) {
-                    for(Object val : (Iterable) field.value()) {
+            for(Object value : field.getValues()) {
+                if (field.getValue() instanceof Iterable) {
+                    for(Object val : (Iterable) field.getValue()) {
                         values.add((String) val);
                     }
                 } else {
