@@ -123,7 +123,7 @@ Security constraints in the elasticsearch-jetty plugin is very similar to securi
 
 h3. Request Logging
 
-The elasticsearch-jetty plugin contains two versions of the HTTP Server Transport: @JettyHttpServerTransport@ and @FilterHttpTransportModule@. While @JettyHttpServerTransport@ uses Jetty to handle all incoming requests, @FilterHttpTransportModule@ simply wraps another HTTP Server Transport (@JettyHttpServerTransport@ by default) to filter requests and responses. @FilterHttpTransportModule@ can be configured to pass all incoming requests through a chain of filters. The elaticsearch-jetty plugin contains one such filter that can be used for request logging.
+The elasticsearch-jetty plugin contains two versions of the HTTP Server Transport: @JettyHttpServerTransport@ and @FilterHttpTransportModule@. While @JettyHttpServerTransport@ uses Jetty to handle all incoming requests, @FilterHttpTransportModule@ simply wraps another HTTP Server Transport (@JettyHttpServerTransport@ by default) to filter requests and responses. @FilterHttpTransportModule@ can be configured to pass all incoming requests through a chain of filters. The elasticsearch-jetty plugin contains one such filter that can be used for request logging.
 
 In order to setup request logging, elasticsearch should be switched to use @FilterHttpTransportModule@. It can be done by the following setting:
 
@@ -252,7 +252,7 @@ To simplify custom configuration, the elasticsearch-jetty plugin exposes several
 * @jetty.port@ - Http port, if the setting @sonian.elasticsearch.http.jetty.port@ is not specified, ElasticSearch will try to use http.port or default to 9200-9300. If port is specified in form of the range, ElasticSearch will try to start Jetty with each individual port number iterating through the range.
 * @jetty.*@ - all other settings specified in @sonian.elasticsearch.http.jetty.@ are exposed as Jetty properties. For example, the setting @sonian.elasticsearch.http.jetty.foo@ can be referred to in Jetty configuration as *<Property name="jetty.foo"/>*.
 
-It also exposes two elaticsearch objects using the following ids:
+It also exposes two elasticsearch objects using the following ids:
 
 * @ESServerTransport@ - The @JettyHttpServerTransport@ object that is needed to configure @JettyHttpServerTransportHandler@ properly.
 * @ESClient@ - elasticsearch client that can be used by custom component to communicate to local instance of elasticsearch.
