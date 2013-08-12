@@ -248,7 +248,7 @@ To simplify custom configuration, the elasticsearch-jetty plugin exposes several
 * @es.data@ - ElasticSearch data directory
 * @es.cluster.data@ - ElasticSearch data directory for the cluster
 * @es.cluster@ - Cluster name
-* @jetty.bing_host@ - Http bind host, if the setting @sonian.elasticsearch.http.jetty.bind_host@ is not specified, ElasticSearch will try to use values specified in @http.bind_host@ and @http.host@ settings.
+* @jetty.bind_host@ - Http bind host, if the setting @sonian.elasticsearch.http.jetty.bind_host@ is not specified, ElasticSearch will try to use values specified in @http.bind_host@ and @http.host@ settings.
 * @jetty.port@ - Http port, if the setting @sonian.elasticsearch.http.jetty.port@ is not specified, ElasticSearch will try to use http.port or default to 9200-9300. If port is specified in form of the range, ElasticSearch will try to start Jetty with each individual port number iterating through the range.
 * @jetty.*@ - all other settings specified in @sonian.elasticsearch.http.jetty.@ are exposed as Jetty properties. For example, the setting @sonian.elasticsearch.http.jetty.foo@ can be referred to in Jetty configuration as *<Property name="jetty.foo"/>*.
 
