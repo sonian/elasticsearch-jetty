@@ -15,11 +15,13 @@
  */
 package com.sonian.elasticsearch.http.jetty;
 
-import org.codehaus.jackson.map.ObjectMapper;
 import org.elasticsearch.ElasticSearchException;
 import org.elasticsearch.common.io.Streams;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.common.transport.TransportAddress;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import sun.misc.BASE64Encoder;
 
 import java.io.*;
