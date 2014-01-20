@@ -19,18 +19,21 @@ import org.elasticsearch.common.bytes.BytesArray;
 import org.elasticsearch.common.bytes.BytesReference;
 import org.elasticsearch.common.io.Streams;
 import org.elasticsearch.http.HttpRequest;
-import org.elasticsearch.rest.support.AbstractRestRequest;
 import org.elasticsearch.rest.support.RestUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.util.AbstractMap.SimpleEntry;
+import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
  * @author imotov
  */
-public class JettyHttpServerRestRequest extends AbstractRestRequest implements HttpRequest {
+public class JettyHttpServerRestRequest extends HttpRequest {
 
     public static final String REQUEST_CONTENT_ATTRIBUTE = "com.sonian.elasticsearch.http.jetty.request-content";
 
@@ -96,6 +99,20 @@ public class JettyHttpServerRestRequest extends AbstractRestRequest implements H
 
     @Override public String header(String name) {
         return request.getHeader(name);
+    }
+
+    @Override public Iterable<Map.Entry<String, String>> headers() {
+        List<Map.Entry<String, String>> headers = new ArrayList<Map.Entry<String, String>>();
+        Enumeration<String> headerNames = this.request.getHeaderNames();
+        while (headerNames.hasMoreElements()) {
+            String name = headerNames.nextElement();
+            Enumeration<String> headerValues = this.request.getHeaders(name);
+            while (headerValues.hasMoreElements()) {
+                String value = headerValues.nextElement();
+                headers.add(new SimpleEntry<String,String>(name, value));
+            }
+        }
+        return headers;
     }
 
     @Override public Map<String, String> params() {
