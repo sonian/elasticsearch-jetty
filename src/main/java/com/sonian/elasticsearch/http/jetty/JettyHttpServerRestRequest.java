@@ -15,22 +15,26 @@
  */
 package com.sonian.elasticsearch.http.jetty;
 
+import java.io.IOException;
+import java.util.AbstractMap;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import javax.servlet.http.HttpServletRequest;
+
 import org.elasticsearch.common.bytes.BytesArray;
 import org.elasticsearch.common.bytes.BytesReference;
 import org.elasticsearch.common.io.Streams;
 import org.elasticsearch.http.HttpRequest;
-import org.elasticsearch.rest.support.AbstractRestRequest;
 import org.elasticsearch.rest.support.RestUtils;
-
-import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * @author imotov
  */
-public class JettyHttpServerRestRequest extends AbstractRestRequest implements HttpRequest {
+public class JettyHttpServerRestRequest extends HttpRequest {
 
     public static final String REQUEST_CONTENT_ATTRIBUTE = "com.sonian.elasticsearch.http.jetty.request-content";
 
@@ -149,4 +153,43 @@ public class JettyHttpServerRestRequest extends AbstractRestRequest implements H
     public String opaqueId() {
         return this.opaqueId;
     }
+    
+    @Override
+    public Iterable<Entry<String, String>> headers() {
+        class HeadersWrapper implements Iterable<Entry<String, String>> {
+            
+            @Override
+            public Iterator<Entry<String, String>> iterator() {
+                return new HeadersIterator();
+            }
+            
+            class HeadersIterator implements Iterator<Entry<String, String>> {
+                
+                private Enumeration<String> headerNames;
+                
+                public HeadersIterator() {
+                    this.headerNames = request.getHeaderNames();
+                }
+
+                @Override
+                public boolean hasNext() {
+                    return headerNames.hasMoreElements();
+                }
+
+                @Override
+                public Entry<String, String> next() {
+                    String headerName = headerNames.nextElement();
+                    return new AbstractMap.SimpleEntry<String, String>(headerName, request.getHeader(headerName));
+                }
+
+                @Override
+                public void remove() {
+                    return;
+                }
+                
+            }
+        }
+        
+        return new HeadersWrapper();
+	}
 }

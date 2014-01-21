@@ -133,4 +133,9 @@ public class CollectingESLogger extends AbstractESLogger {
     private void log(String level, String message) {
         out.log(level + ":" + message);
     }
+
+	@Override
+	public String getLevel() {
+		return level.name();
+	}
 }

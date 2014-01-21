@@ -15,8 +15,6 @@
  */
 package com.sonian.elasticsearch.http.filter.logging;
 
-import org.elasticsearch.ElasticSearchIllegalArgumentException;
-import org.elasticsearch.common.Strings;
 import org.elasticsearch.common.component.AbstractComponent;
 import org.elasticsearch.common.inject.Inject;
 import org.elasticsearch.common.path.PathTrie;

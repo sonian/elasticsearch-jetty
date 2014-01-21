@@ -24,6 +24,7 @@ import org.eclipse.jetty.util.ByteArrayISO8859Writer;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 
 /**
@@ -35,7 +36,6 @@ public class JettyHttpServerErrorHandler extends ErrorHandler {
     public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException {
         AbstractHttpConnection connection = AbstractHttpConnection.getCurrentConnection();
         connection.getRequest().setHandled(true);
-        String method = request.getMethod();
         response.setContentType(MimeTypes.TEXT_PLAIN_8859_1);
         ByteArrayISO8859Writer writer= new ByteArrayISO8859Writer(4096);
         writer.write(request.getAttribute(Dispatcher.ERROR_STATUS_CODE) + " " +
