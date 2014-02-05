@@ -2,11 +2,11 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <name>elasticsearch-jetty-fork</name>
+  <name>elasticsearch-jetty</name>
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.sonian</groupId>
-  <artifactId>elasticsearch-jetty-fork</artifactId>
-  <version>0.90.10-SNAPSHOT</version>
+  <artifactId>elasticsearch-jetty</artifactId>
+  <version>0.90.10</version>
   <packaging>jar</packaging>
   <description>Jetty plugin for ElasticSearch</description>
   <inceptionYear>2011</inceptionYear>
@@ -59,6 +59,18 @@
         <role>developer</role>
       </roles>
       <timezone>-5</timezone>
+    </developer>
+    <developer>
+      <id>pmusa</id>
+      <name>Pablo Musa</name>
+      <email>pmusa@emergi.net</email>
+      <url>http://www.inf.puc-rio.br/~pmusa/</url>
+      <organization>EmergiNet</organization>
+      <organizationUrl>http://www.emergi.net/</organizationUrl>
+      <roles>
+        <role>developer</role>
+      </roles>
+      <timezone>-3</timezone>
     </developer>
   </developers>
 
