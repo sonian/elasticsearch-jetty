@@ -1,0 +1,58 @@
+<?xml version="1.0"?>
+<!DOCTYPE Configure PUBLIC "-//Jetty//Configure//EN" "http://www.eclipse.org/jetty/configure.dtd">
+
+<Configure id="ESServer" class="org.eclipse.jetty.server.Server">
+
+    <!-- ============================================= -->
+    <!-- Constraint for cluster-level write operations -->
+    <!-- ============================================= -->
+    <New class="org.eclipse.jetty.util.security.Constraint"
+         id="AdminSecurityConstraint">
+        <Set name="authenticate">true</Set>
+        <Set name="name">BASIC</Set>
+        <Set name="roles">
+            <Array type="java.lang.String">
+                <Item>admin</Item>
+            </Array>
+        </Set>
+    </New>
+
+    <!-- ======================================== -->
+    <!--               No constraints             -->
+    <!-- ======================================== -->
+    <New class="org.eclipse.jetty.util.security.Constraint"
+         id="NoneSecurityConstraint">
+        <Set name="authenticate">false</Set>
+    </New>
+
+    <Get id="OldHandler" name="handler"/>
+
+    <Set name="handler">
+        <New class="com.sonian.elasticsearch.http.jetty.security.RestConstraintSecurityHandler"
+             id="DefaultSecurityHandler">
+
+            <Set name="handler"><Ref id="OldHandler"/></Set>
+
+            <Set name="loginService">
+                <Ref id="DefaultLoginService"/>
+            </Set>
+            <Set name="realmName">DefaultRealm</Set>
+
+            <!-- ======================================== -->
+            <!--       ReadWrite DELETE operations        -->
+            <!-- ======================================== -->
+            <Call name="addConstraintMapping">
+                <Arg>
+                    <New class="org.eclipse.jetty.security.ConstraintMapping">
+                        <Set name="method">DELETE</Set>
+                        <Set name="pathSpec">*</Set>
+                        <Set name="constraint">
+                            <Ref id="AdminSecurityConstraint"/>
+                        </Set>
+                    </New>
+                </Arg>
+            </Call>
+        </New>
+    </Set>
+
+</Configure>
