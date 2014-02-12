@@ -5,7 +5,7 @@ h2. Compatibility
 The following table shows the versions of elasticsearch and jetty that Jetty Plugin was built with.
 
 |_. Jetty Plugin |_.  Elasticsearch    |_.  Jetty  |
-| 0.90.0   | 0.90.0   | 8.1.4.v20120524   |
+| 0.90.0.* | 0.90.0   | 8.1.4.v20120524   |
 | 0.20.1   | 0.20.2   | 8.1.4.v20120524   |
 | 0.19.9-master | 0.19.9  | 8.1.4.v20120524   |
 | 0.19.6-0.19.8 | 0.19.8  | 8.1.4.v20120524   |
@@ -26,7 +26,7 @@ The elasticsearch-jetty plugin can be installed as any other ES plugin using bin
 (specifying the URL is required since github downloads are going away)
 
 <pre>
-$ bin/plugin -url https://oss-es-plugins.s3.amazonaws.com/elasticsearch-jetty/elasticsearch-jetty-0.90.0.zip -install elasticsearch-jetty-0.90.0
+$ bin/plugin -url https://s3.amazonaws.com/www.emergi.net/elasticsearch/plugins/elasticsearch-jetty-0.90.0.1.zip -install elasticsearch-jetty-0.90.0
 </pre>
 
 The core of the plugin is JettyHttpServerTransport module that works as a replacement for NettyHttpServerTransport. To enable the elasticsearch-jetty plugin, the default netty http transport should be replaced with jetty http transport by adding the following line to @elasticsearch.yml@.
