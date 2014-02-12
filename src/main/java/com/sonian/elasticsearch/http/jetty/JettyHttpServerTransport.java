@@ -20,7 +20,7 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.util.component.LifeCycle;
 import org.eclipse.jetty.util.log.Log;
 import org.eclipse.jetty.xml.XmlConfiguration;
-import org.elasticsearch.ElasticSearchException;
+import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.cluster.ClusterName;
 import org.elasticsearch.common.collect.MapBuilder;
@@ -91,7 +91,7 @@ public class JettyHttpServerTransport extends AbstractLifecycleComponent<HttpSer
     }
 
     @Override
-    protected void doStart() throws ElasticSearchException {
+    protected void doStart() throws ElasticsearchException {
         PortsRange portsRange = new PortsRange(port);
         final AtomicReference<Exception> lastException = new AtomicReference<Exception>();
 
@@ -142,7 +142,7 @@ public class JettyHttpServerTransport extends AbstractLifecycleComponent<HttpSer
                     }
                     if (server == null) {
                         logger.error("Cannot find server with id [{}] in configuration files [{}]", jettyConfigServerId, jettyConfig);
-                        lastException.set(new ElasticSearchException("Cannot find server with id " + jettyConfigServerId));
+                        lastException.set(new ElasticsearchException("Cannot find server with id " + jettyConfigServerId));
                         return true;
                     }
 
@@ -210,19 +210,19 @@ public class JettyHttpServerTransport extends AbstractLifecycleComponent<HttpSer
     }
 
     @Override
-    protected void doStop() throws ElasticSearchException {
+    protected void doStop() throws ElasticsearchException {
         if (jettyServer != null) {
             try {
                 jettyServer.stop();
             } catch (Exception ex) {
-                throw new ElasticSearchException("Cannot stop jetty server", ex);
+                throw new ElasticsearchException("Cannot stop jetty server", ex);
             }
             jettyServer = null;
         }
     }
 
     @Override
-    protected void doClose() throws ElasticSearchException {
+    protected void doClose() throws ElasticsearchException {
     }
 
     @Override
