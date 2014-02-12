@@ -6,7 +6,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.sonian</groupId>
   <artifactId>elasticsearch-jetty</artifactId>
-  <version>0.90.10</version>
+  <version>1.0.0-SNAPSHOT</version>
   <packaging>jar</packaging>
   <description>Jetty plugin for ElasticSearch</description>
   <inceptionYear>2011</inceptionYear>
@@ -82,7 +82,7 @@
   </parent>
 
   <properties>
-    <elasticsearch.version>0.90.10</elasticsearch.version>
+    <elasticsearch.version>1.0.0</elasticsearch.version>
     <jetty.version>8.1.14.v20131031</jetty.version>
     <github.global.server>github</github.global.server>
   </properties>
