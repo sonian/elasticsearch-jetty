@@ -64,10 +64,7 @@ public class JettyHttpServerRestChannel implements HttpChannel {
         } else {
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
-        ESLogger logger = Loggers.getLogger(JettyHttpServerRestChannel.class);
-        logger.warn("PASSEI POR AQUI. com valor - " + restRequest.method() + " " + response.status().getStatus());
         if (restRequest.method() == RestRequest.Method.OPTIONS) {
-            logger.warn("lelele!!");
             // also add more access control parameters
             // Allow Ajax requests based on the CORS "preflight" request
             resp.addHeader("Access-Control-Max-Age", "1728000");
