@@ -15,14 +15,17 @@
  */
 package com.sonian.elasticsearch.http.jetty;
 
-import org.elasticsearch.http.HttpChannel;
-import org.elasticsearch.rest.RestRequest;
-import org.elasticsearch.rest.RestResponse;
+import java.io.IOException;
+import java.util.concurrent.CountDownLatch;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.concurrent.CountDownLatch;
+
+import org.elasticsearch.common.logging.ESLogger;
+import org.elasticsearch.common.logging.Loggers;
+import org.elasticsearch.http.HttpChannel;
+import org.elasticsearch.rest.RestRequest;
+import org.elasticsearch.rest.RestResponse;
 
 /**
  * @author imotov
@@ -53,6 +56,8 @@ public class JettyHttpServerRestChannel implements HttpChannel {
     @Override
     public void sendResponse(RestResponse response) {
         resp.setContentType(response.contentType());
+        // add support for cross origin
+        // Add support for cross-origin Ajax requests (CORS)
         resp.addHeader("Access-Control-Allow-Origin", "*");
         if (response.status() != null) {
             resp.setStatus(response.status().getStatus());
@@ -61,9 +66,10 @@ public class JettyHttpServerRestChannel implements HttpChannel {
         }
         if (restRequest.method() == RestRequest.Method.OPTIONS) {
             // also add more access control parameters
+            // Allow Ajax requests based on the CORS "preflight" request
             resp.addHeader("Access-Control-Max-Age", "1728000");
-            resp.addHeader("Access-Control-Allow-Methods", "PUT, DELETE");
-            resp.addHeader("Access-Control-Allow-Headers", "X-Requested-With");
+            resp.addHeader("Access-Control-Allow-Methods", "OPTIONS, HEAD, GET, POST, PUT, DELETE");
+            resp.addHeader("Access-Control-Allow-Headers", "X-Requested-With, Content-Type, Content-Length");
         }
         try {
             int contentLength = response.contentLength();

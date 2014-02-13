@@ -6,7 +6,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.sonian</groupId>
   <artifactId>elasticsearch-jetty</artifactId>
-  <version>0.90.1-SNAPSHOT</version>
+  <version>1.0.0</version>
   <packaging>jar</packaging>
   <description>Jetty plugin for ElasticSearch</description>
   <inceptionYear>2011</inceptionYear>
@@ -60,6 +60,18 @@
       </roles>
       <timezone>-5</timezone>
     </developer>
+    <developer>
+      <id>pmusa</id>
+      <name>Pablo Musa</name>
+      <email>pmusa@emergi.net</email>
+      <url>http://www.inf.puc-rio.br/~pmusa/</url>
+      <organization>EmergiNet</organization>
+      <organizationUrl>http://www.emergi.net/</organizationUrl>
+      <roles>
+        <role>developer</role>
+      </roles>
+      <timezone>-3</timezone>
+    </developer>
   </developers>
 
 
@@ -70,8 +82,8 @@
   </parent>
 
   <properties>
-    <elasticsearch.version>0.90.0</elasticsearch.version>
-    <jetty.version>8.1.4.v20120524</jetty.version>
+    <elasticsearch.version>1.0.0</elasticsearch.version>
+    <jetty.version>8.1.14.v20131031</jetty.version>
     <github.global.server>github</github.global.server>
   </properties>
 
