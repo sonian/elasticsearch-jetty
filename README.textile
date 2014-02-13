@@ -5,6 +5,7 @@ h2. Compatibility
 The following table shows the versions of elasticsearch and jetty that Jetty Plugin was built with.
 
 |_. Jetty Plugin |_.  Elasticsearch    |_.  Jetty  |
+| 1.0.0     | 1.0.0    | 8.1.14.v20131031  |
 | 0.90.10.* | 0.90.10  | 8.1.14.v20131031  |
 | 0.90.0.*  | 0.90.0   | 8.1.4.v20120524   |
 | 0.20.1    | 0.20.2   | 8.1.4.v20120524   |
@@ -27,7 +28,7 @@ The elasticsearch-jetty plugin can be installed as any other ES plugin using bin
 (specifying the URL is required since github downloads are going away)
 
 <pre>
-$ bin/plugin -url https://s3.amazonaws.com/www.emergi.net/elasticsearch/plugins/elasticsearch-jetty-0.90.10.zip -install elasticsearch-jetty-0.90.10
+$ bin/plugin -url https://s3.amazonaws.com/www.emergi.net/elasticsearch/plugins/elasticsearch-jetty-1.0.0.zip -install elasticsearch-jetty-1.0.0
 </pre>
 
 The core of the plugin is JettyHttpServerTransport module that works as a replacement for NettyHttpServerTransport. To enable the elasticsearch-jetty plugin, the default netty http transport should be replaced with jetty http transport by adding the following line to @elasticsearch.yml@.
@@ -36,7 +37,7 @@ The core of the plugin is JettyHttpServerTransport module that works as a replac
 http.type: com.sonian.elasticsearch.http.jetty.JettyHttpServerTransportModule
 </pre>
 
-The elasticsearch-jetty plugin adds @Server: Jetty(8.1.4.v20120524)@ header to all responses. So, it's possible to verify that jetty plugin is running by checking the response headers using the following curl command:
+The elasticsearch-jetty plugin adds @Server: Jetty(8.1.14.v20131031)@ header to all responses. So, it's possible to verify that jetty plugin is running by checking the response headers using the following curl command:
 
 <pre>
 $ curl -I "http://localhost:9200/"
@@ -44,7 +45,7 @@ HTTP/1.1 200 OK
 Content-Type: text/plain;charset=UTF-8
 Access-Control-Allow-Origin: *
 Content-Length: 0
-Server: Jetty(8.1.4.v20120524)
+Server: Jetty(8.1.14.v20131031)
 </pre>
 
 
