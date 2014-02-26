@@ -70,8 +70,8 @@
   </parent>
 
   <properties>
-    <elasticsearch.version>0.90.3</elasticsearch.version>
-    <jetty.version>8.1.9.v20130131</jetty.version>
+    <elasticsearch.version>0.90.0</elasticsearch.version>
+    <jetty.version>8.1.4.v20120524</jetty.version>
     <github.global.server>github</github.global.server>
   </properties>
 
@@ -111,7 +111,7 @@
       <version>${jetty.version}</version>
       <scope>compile</scope>
     </dependency>
-    
+
     <dependency>
       <groupId>org.testng</groupId>
       <artifactId>testng</artifactId>
@@ -143,7 +143,7 @@
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
-      <version>2.2.3</version>
+      <version>2.3.1</version>
       <scope>test</scope>
     </dependency>
 
@@ -165,7 +165,7 @@
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
-      <version>1.7.5</version>
+      <version>1.7.6</version>
       <scope>test</scope>
       <optional>true</optional>
     </dependency>
