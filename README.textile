@@ -27,7 +27,7 @@ The elasticsearch-jetty plugin can be installed as any other ES plugin using bin
 (specifying the URL is required since github downloads are going away)
 
 <pre>
-$ bin/plugin -url https://oss-es-plugins.s3.amazonaws.com/elasticsearch-jetty/elasticsearch-jetty-0.90.0.zip -install elasticsearch-jetty-0.90.0
+$ bin/plugin -url https://oss-es-plugins.s3.amazonaws.com/elasticsearch-jetty/elasticsearch-jetty-0.90.12.zip -install elasticsearch-jetty-0.90.12
 </pre>
 
 The core of the plugin is JettyHttpServerTransport module that works as a replacement for NettyHttpServerTransport. To enable the elasticsearch-jetty plugin, the default netty http transport should be replaced with jetty http transport by adding the following line to @elasticsearch.yml@.
