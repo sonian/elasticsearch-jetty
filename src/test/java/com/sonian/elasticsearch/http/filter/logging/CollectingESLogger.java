@@ -97,6 +97,11 @@ public class CollectingESLogger extends AbstractESLogger {
     }
 
     @Override
+    public String getLevel() {
+        return this.level.name();
+    }
+
+    @Override
     public void setLevel(String level) {
         this.level = Level.valueOf(level);
     }
