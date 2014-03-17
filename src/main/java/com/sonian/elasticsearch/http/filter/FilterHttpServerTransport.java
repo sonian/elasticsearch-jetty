@@ -15,7 +15,7 @@
  */
 package com.sonian.elasticsearch.http.filter;
 
-import org.elasticsearch.ElasticSearchException;
+import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.common.Nullable;
 import org.elasticsearch.common.collect.ImmutableList;
 import org.elasticsearch.common.collect.MapBuilder;
@@ -88,19 +88,19 @@ public class FilterHttpServerTransport extends AbstractLifecycleComponent<HttpSe
 
     @Override
     protected void doStart
-            () throws ElasticSearchException {
+            () throws ElasticsearchException {
         filteredHttpServerTransport.start();
     }
 
     @Override
     protected void doStop
-            () throws ElasticSearchException {
+            () throws ElasticsearchException {
         filteredHttpServerTransport.stop();
     }
 
     @Override
     protected void doClose
-            () throws ElasticSearchException {
+            () throws ElasticsearchException {
         filteredHttpServerTransport.close();
     }
 

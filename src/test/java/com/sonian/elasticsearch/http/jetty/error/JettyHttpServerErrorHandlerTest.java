@@ -17,8 +17,6 @@ package com.sonian.elasticsearch.http.jetty.error;
 
 import com.sonian.elasticsearch.http.jetty.AbstractJettyHttpServerTests;
 import com.sonian.elasticsearch.http.jetty.HttpClientResponse;
-import junit.framework.TestCase;
-import org.elasticsearch.ElasticSearchException;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;

@@ -17,7 +17,7 @@ package com.sonian.elasticsearch.http.filter;
 
 import com.sonian.elasticsearch.http.jetty.ESLoggerWrapper;
 import com.sonian.elasticsearch.http.jetty.JettyHttpServerTransport;
-import org.elasticsearch.ElasticSearchIllegalArgumentException;
+import org.elasticsearch.ElasticsearchIllegalArgumentException;
 import org.elasticsearch.common.inject.AbstractModule;
 import org.elasticsearch.common.inject.Scopes;
 import org.elasticsearch.common.inject.assistedinject.FactoryProvider;
@@ -74,7 +74,7 @@ public class FilterHttpServerTransportModule extends AbstractModule {
                 // Ignore
             }
             if (type == null) {
-                throw new ElasticSearchIllegalArgumentException("Http Filter [" + filterName + "] must have a type associated with it");
+                throw new ElasticsearchIllegalArgumentException("Http Filter [" + filterName + "] must have a type associated with it");
             }
             filterBinder.addBinding(filterName)
                     .toProvider(FactoryProvider.newFactory(FilterHttpServerAdapterFactory.class, type))
