@@ -17,7 +17,7 @@ package com.sonian.elasticsearch.http.filter.timeout;
 
 import com.sonian.elasticsearch.http.filter.FilterChain;
 import com.sonian.elasticsearch.http.filter.FilterHttpServerAdapter;
-import org.elasticsearch.ElasticSearchParseException;
+import org.elasticsearch.ElasticsearchParseException;
 import org.elasticsearch.common.inject.Inject;
 import org.elasticsearch.common.inject.assistedinject.Assisted;
 import org.elasticsearch.common.settings.Settings;
@@ -42,7 +42,7 @@ public class TimeoutFilterHttpServerAdapter implements FilterHttpServerAdapter {
             long sleep = -1;
             try {
                 sleep = request.paramAsTime(SLEEP_PARAM, TimeValue.timeValueMillis(0)).millis();
-            } catch (ElasticSearchParseException ex) {
+            } catch (ElasticsearchParseException ex) {
                 // Ignore
             }
             if (sleep > 0) {

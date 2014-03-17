@@ -15,7 +15,7 @@
  */
 package com.sonian.elasticsearch.http.jetty;
 
-import org.elasticsearch.ElasticSearchException;
+import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.common.io.Streams;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.common.transport.TransportAddress;
@@ -51,7 +51,7 @@ public class HttpClient {
         try {
             baseUrl = new URL("http", address.getHostName(), address.getPort(), "/");
         } catch (MalformedURLException e) {
-            throw new ElasticSearchException("", e);
+            throw new ElasticsearchException("", e);
         }
         if (username != null) {
             BASE64Encoder enc = new BASE64Encoder();
@@ -77,7 +77,7 @@ public class HttpClient {
         try {
             url = new URL(baseUrl, path);
         } catch (MalformedURLException e) {
-            throw new ElasticSearchException("Cannot parse " + path, e);
+            throw new ElasticsearchException("Cannot parse " + path, e);
         }
 
         HttpURLConnection urlConnection;
@@ -94,7 +94,7 @@ public class HttpClient {
 
             urlConnection.connect();
         } catch (IOException e) {
-            throw new ElasticSearchException("", e);
+            throw new ElasticsearchException("", e);
         }
 
         if (data != null) {
@@ -103,13 +103,13 @@ public class HttpClient {
                 outputStream = urlConnection.getOutputStream();
                 outputStream.write(data);
             } catch (IOException e) {
-                throw new ElasticSearchException("", e);
+                throw new ElasticsearchException("", e);
             } finally {
                 if (outputStream != null) {
                     try {
                         outputStream.close();
                     } catch (IOException e) {
-                        throw new ElasticSearchException("", e);
+                        throw new ElasticsearchException("", e);
                     }
                 }
             }
@@ -126,7 +126,7 @@ public class HttpClient {
             try {
                 body = Streams.copyToString(new InputStreamReader(errStream));
             } catch (IOException e1) {
-                throw new ElasticSearchException("problem reading error stream", e1);
+                throw new ElasticsearchException("problem reading error stream", e1);
             }
             Map m = newHashMap();
             m.put("body", body);
@@ -143,7 +143,7 @@ public class HttpClient {
         try {
             mapper.writeValue(out, data);
         } catch (IOException e) {
-            throw new ElasticSearchException("", e);
+            throw new ElasticsearchException("", e);
         }
         return request(method, path, out.toByteArray());
     }
