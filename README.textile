@@ -5,6 +5,7 @@ h2. Compatibility
 The following table shows the versions of elasticsearch and jetty that Jetty Plugin was built with.
 
 |_. Jetty Plugin |_.  Elasticsearch    |_.  Jetty  |
+| 1.0.1    | 1.0.1    | 8.1.14.v20131031 |
 | 0.90.12   | 0.90.12   | 8.1.14.v20131031   |
 | 0.90.0   | 0.90.0   | 8.1.4.v20120524   |
 | 0.20.1   | 0.20.2   | 8.1.4.v20120524   |
