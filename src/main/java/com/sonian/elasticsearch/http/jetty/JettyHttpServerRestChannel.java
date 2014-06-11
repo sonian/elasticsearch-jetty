@@ -27,7 +27,7 @@ import java.util.concurrent.CountDownLatch;
 /**
  * @author imotov
  */
-public class JettyHttpServerRestChannel implements HttpChannel {
+public class JettyHttpServerRestChannel extends HttpChannel {
     private final RestRequest restRequest;
 
     private final HttpServletResponse resp;
@@ -37,6 +37,7 @@ public class JettyHttpServerRestChannel implements HttpChannel {
     private final CountDownLatch latch;
 
     public JettyHttpServerRestChannel(RestRequest restRequest, HttpServletResponse resp) {
+        super(restRequest);
         this.restRequest = restRequest;
         this.resp = resp;
         this.latch = new CountDownLatch(1);
@@ -66,22 +67,11 @@ public class JettyHttpServerRestChannel implements HttpChannel {
             resp.addHeader("Access-Control-Allow-Headers", "X-Requested-With, Content-Type, Content-Length");
         }
         try {
-            int contentLength = response.contentLength();
-            if (response.prefixContentLength() > 0) {
-                contentLength += response.prefixContentLength();
-            }
-            if (response.suffixContentLength() > 0) {
-                contentLength += response.suffixContentLength();
-            }
+            int contentLength = response.content().length();
             resp.setContentLength(contentLength);
             ServletOutputStream out = resp.getOutputStream();
-            if (response.prefixContent() != null) {
-                out.write(response.prefixContent(), 0, response.prefixContentLength());
-            }
-            out.write(response.content(), 0, response.contentLength());
-            if (response.suffixContent() != null) {
-                out.write(response.suffixContent(), 0, response.suffixContentLength());
-            }
+            response.content().writeTo(out);
+            // TODO: close in a finally?
             out.close();
         } catch (IOException e) {
             sendFailure = e;

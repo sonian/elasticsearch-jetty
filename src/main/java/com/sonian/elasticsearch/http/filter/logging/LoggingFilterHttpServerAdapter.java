@@ -104,7 +104,7 @@ public class LoggingFilterHttpServerAdapter implements FilterHttpServerAdapter {
         return buf;
     }
 
-    private class LoggingHttpChannel implements HttpChannel {
+    private class LoggingHttpChannel extends HttpChannel {
         private final HttpRequest request;
         
         private final HttpChannel channel;
@@ -136,6 +136,7 @@ public class LoggingFilterHttpServerAdapter implements FilterHttpServerAdapter {
         private final String opaqueId;
 
         public LoggingHttpChannel(HttpRequest request, HttpChannel channel, String format, boolean logBody) {
+            super(request);
             this.channel = channel;
             this.request = request;
 
@@ -240,8 +241,8 @@ public class LoggingFilterHttpServerAdapter implements FilterHttpServerAdapter {
         public void sendResponse(RestResponse response) {
             int contentLength = -1;
             try {
-                contentLength = response.contentLength();
-            } catch (IOException ex) {
+                contentLength = response.content().length();
+            } catch (RuntimeException ex) {
                 // Ignore
             }
             channel.sendResponse(response);
