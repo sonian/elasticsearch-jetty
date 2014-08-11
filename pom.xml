@@ -6,7 +6,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.sonian</groupId>
   <artifactId>elasticsearch-jetty</artifactId>
-  <version>1.2-SNAPSHOT</version>
+  <version>1.2.3-beta</version>
   <packaging>jar</packaging>
   <description>Jetty plugin for ElasticSearch</description>
   <inceptionYear>2011</inceptionYear>
