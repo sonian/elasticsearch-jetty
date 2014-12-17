@@ -4,9 +4,9 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <name>elasticsearch-jetty</name>
   <modelVersion>4.0.0</modelVersion>
-  <groupId>com.sonian</groupId>
+  <groupId>com.kozmagabor</groupId>
   <artifactId>elasticsearch-jetty</artifactId>
-  <version>1.3.4</version>
+  <version>1.3.7</version>
   <packaging>jar</packaging>
   <description>Jetty plugin for ElasticSearch</description>
   <inceptionYear>2011</inceptionYear>
@@ -31,7 +31,7 @@
   </parent>
 
   <properties>
-    <elasticsearch.version>1.3.4</elasticsearch.version>
+    <elasticsearch.version>1.3.7</elasticsearch.version>
     <jetty.version>8.1.16.v20140903</jetty.version>
     <github.global.server>github</github.global.server>
   </properties>
