@@ -4,9 +4,9 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <name>elasticsearch-jetty</name>
   <modelVersion>4.0.0</modelVersion>
-  <groupId>com.sonian</groupId>
+  <groupId>com.kozmagabor</groupId>
   <artifactId>elasticsearch-jetty</artifactId>
-  <version>1.2.3-beta</version>
+  <version>1.3.7</version>
   <packaging>jar</packaging>
   <description>Jetty plugin for ElasticSearch</description>
   <inceptionYear>2011</inceptionYear>
@@ -19,50 +19,11 @@
     </license>
   </licenses>
   <scm>
-    <connection>scm:git:git@github.com:sonian/elasticsearch-jetty.git</connection>
-    <developerConnection>scm:git:git@github.com:sonian/elasticsearch-jetty.git</developerConnection>
-    <url>http://github.com/sonian/elasticsearch-jetty</url>
+    <connection>scm:git:git@github.com:kozmagabor/elasticsearch-jetty.git</connection>
+    <developerConnection>scm:git:git@github.com:kozmagabor/elasticsearch-jetty.git</developerConnection>
+    <url>http://github.com/kozmagabor/elasticsearch-jetty</url>
   </scm>
-  <developers>
-    <developer>
-      <id>drewr</id>
-      <name>Drew Raines</name>
-      <email>drew@raines.me</email>
-      <url>http://drew.raines.me</url>
-      <organization>Sonian</organization>
-      <organizationUrl>http://www.sonian.com</organizationUrl>
-      <roles>
-        <role>developer</role>
-      </roles>
-      <timezone>-6</timezone>
-    </developer>
-    <developer>
-      <id>dakrone</id>
-      <name>Lee Hinman</name>
-      <email>lee@writequit.org</email>
-      <url>http://writequit.org</url>
-      <organization>Sonian</organization>
-      <organizationUrl>http://www.sonian.com</organizationUrl>
-      <roles>
-        <role>developer</role>
-      </roles>
-      <timezone>-7</timezone>
-    </developer>
-    <developer>
-      <id>imotov</id>
-      <name>Igor Motov</name>
-      <email>igor@motovs.org</email>
-      <url>http://www.motovs.org/igor</url>
-      <organization>Sonian</organization>
-      <organizationUrl>http://www.sonian.com</organizationUrl>
-      <roles>
-        <role>developer</role>
-      </roles>
-      <timezone>-5</timezone>
-    </developer>
-  </developers>
-
-
+ 
   <parent>
     <groupId>org.sonatype.oss</groupId>
     <artifactId>oss-parent</artifactId>
@@ -70,18 +31,26 @@
   </parent>
 
   <properties>
-    <elasticsearch.version>1.2.3</elasticsearch.version>
-    <jetty.version>8.1.14.v20131031</jetty.version>
+    <elasticsearch.version>1.3.7</elasticsearch.version>
+    <jetty.version>8.1.16.v20140903</jetty.version>
     <github.global.server>github</github.global.server>
   </properties>
 
   <repositories>
     <repository>
-      <id>sonatype</id>
-      <name>elasticsearch sonatype repo</name>
-      <url>https://oss.sonatype.org/content/repositories/releases</url>
+      <id>bintray-gabo-maven-elasticsearch-jetty</id>
+      <name>gabo-maven-elasticsearch-jetty</name>
+      <url>https://api.bintray.com/maven/gabo/maven/elasticsearch-jetty</url>
     </repository>
   </repositories>
+
+  <distributionManagement>
+    <repository>
+      <id>bintray-gabo-maven-elasticsearch-jetty</id>
+      <name>gabo-maven-elasticsearch-jetty</name>
+      <url>https://api.bintray.com/maven/gabo/maven/elasticsearch-jetty</url>
+    </repository>
+  </distributionManagement>
 
   <dependencies>
     <dependency>
@@ -177,7 +146,7 @@
       <plugin>
         <groupId>com.github.github</groupId>
         <artifactId>downloads-maven-plugin</artifactId>
-        <version>0.6</version>
+        <version>0.10</version>
         <configuration>
           <description></description>
           <override>true</override>
@@ -190,7 +159,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>2.3.2</version>
+        <version>3.2</version>
         <configuration>
           <source>1.6</source>
           <target>1.6</target>
@@ -199,7 +168,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.11</version>
+        <version>2.17</version>
         <configuration>
           <includes>
             <include>**/*Tests.java</include>
@@ -209,7 +178,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-source-plugin</artifactId>
-        <version>2.1.2</version>
+        <version>2.4</version>
         <executions>
           <execution>
             <id>attach-sources</id>
@@ -221,7 +190,7 @@
       </plugin>
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
-        <version>2.3</version>
+        <version>2.5</version>
         <configuration>
           <appendAssemblyId>false</appendAssemblyId>
           <outputDirectory>${project.build.directory}/releases/</outputDirectory>
@@ -254,7 +223,7 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-gpg-plugin</artifactId>
-            <version>1.4</version>
+            <version>1.5</version>
             <executions>
               <execution>
                 <id>sign-artifacts</id>
