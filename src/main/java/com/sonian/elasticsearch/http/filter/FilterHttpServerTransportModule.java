@@ -39,11 +39,11 @@ public class FilterHttpServerTransportModule extends AbstractModule {
         componentSettings = settings.getComponentSettings(this.getClass());
     }
 
-
+	@SuppressWarnings({"unchecked"})
     @Override
     protected void configure() {
-        bind(HttpServerTransport.class)
-                .to(FilterHttpServerTransport.class).asEagerSingleton();
+        // this transport has already been bound by http server module
+//        bind(HttpServerTransport.class).to(FilterHttpServerTransport.class).asEagerSingleton();
         Class<? extends HttpServerTransport> transport;
         // This is a hack for debugging. It allows switching back to NettyHttpServer if needed.
         // HttpServerTransportModule should be loaded instead of just binding HttpServerTransport

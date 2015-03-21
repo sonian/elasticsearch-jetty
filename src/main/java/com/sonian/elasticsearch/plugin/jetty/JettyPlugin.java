@@ -15,15 +15,29 @@
  */
 package com.sonian.elasticsearch.plugin.jetty;
 
+import com.sonian.elasticsearch.http.filter.FilterHttpServerTransport;
+import com.sonian.elasticsearch.http.filter.FilterHttpServerTransportModule;
+import com.sonian.elasticsearch.http.jetty.JettyHttpServerTransport;
+import com.sonian.elasticsearch.http.jetty.JettyHttpServerTransportModule;
+import org.elasticsearch.common.inject.Module;
 import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.http.HttpServerTransport;
+import org.elasticsearch.http.netty.NettyHttpServerTransport;
 import org.elasticsearch.plugins.AbstractPlugin;
+
+import java.util.Collection;
+
+import static org.elasticsearch.common.collect.Lists.newArrayList;
 
 /**
  * @author imotov
  */
 public class JettyPlugin extends AbstractPlugin {
 
+    private final Settings settings;
+
     public JettyPlugin(Settings settings) {
+        this.settings = settings;
     }
 
     @Override public String name() {
@@ -32,5 +46,21 @@ public class JettyPlugin extends AbstractPlugin {
 
     @Override public String description() {
         return "Jetty Plugin Version: " + Version.number() + " (" + Version.date() + ")";
+    }
+
+    @Override
+    public Collection<Class<? extends Module>> modules() {
+        Collection<Class<? extends Module>> modules = newArrayList();
+        if (settings.getAsBoolean("http.enabled", true)) {
+            Class<? extends HttpServerTransport> defaultHttpServerTransport = NettyHttpServerTransport.class;
+            Class<? extends HttpServerTransport> httpServerTransport = settings.getAsClass("http.type", defaultHttpServerTransport, "org.elasticsearch.http.", "HttpServerTransport");
+            if (httpServerTransport == JettyHttpServerTransport.class) {
+                modules.add(JettyHttpServerTransportModule.class);
+            } else if (httpServerTransport == FilterHttpServerTransport.class) {
+                modules.add(FilterHttpServerTransportModule.class);
+            }
+
+        }
+        return modules;
     }
 }
