@@ -52,7 +52,6 @@ public class AbstractJettyHttpServerTests {
     private Settings defaultSettings = ImmutableSettings
             .settingsBuilder()
             .put("cluster.name", "test-cluster-" + NetworkUtils.getLocalAddress().getHostName())
-            .put("http.type", JettyHttpServerTransport.class.getName())
             .put("sonian.elasticsearch.http.jetty.port", "9290-9300")
             .put("node.local", true)
             .put("gateway.type", "none")

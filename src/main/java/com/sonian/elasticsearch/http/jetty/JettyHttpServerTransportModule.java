@@ -31,8 +31,6 @@ public class JettyHttpServerTransportModule extends AbstractModule {
 
     @SuppressWarnings({"unchecked"})
     @Override protected void configure() {
-        // this transport has already been bound by http server module
-//        bind(HttpServerTransport.class).to(JettyHttpServerTransport.class).asEagerSingleton();
         bind(ESLoggerWrapper.class).asEagerSingleton();
     }
 }

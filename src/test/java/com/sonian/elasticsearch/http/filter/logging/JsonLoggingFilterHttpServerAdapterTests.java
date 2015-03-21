@@ -43,7 +43,7 @@ public class JsonLoggingFilterHttpServerAdapterTests extends AbstractJettyHttpSe
         mockESLoggerFactory = new MockESLoggerFactory("INFO", "com.sonian.elasticsearch.http.filter.jsonlog");
         ESLoggerFactory.setDefaultFactory(mockESLoggerFactory);
         putDefaultSettings(ImmutableSettings.settingsBuilder()
-                .put("http.type", FilterHttpServerTransport.class.getName())
+                .put("sonian.elasticsearch.http.type", FilterHttpServerTransport.class.getName())
         );
     }
 

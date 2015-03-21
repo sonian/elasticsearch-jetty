@@ -21,8 +21,8 @@ import com.sonian.elasticsearch.http.jetty.JettyHttpServerTransport;
 import com.sonian.elasticsearch.http.jetty.JettyHttpServerTransportModule;
 import org.elasticsearch.common.inject.Module;
 import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.http.HttpServerModule;
 import org.elasticsearch.http.HttpServerTransport;
-import org.elasticsearch.http.netty.NettyHttpServerTransport;
 import org.elasticsearch.plugins.AbstractPlugin;
 
 import java.util.Collection;
@@ -35,6 +35,7 @@ import static org.elasticsearch.common.collect.Lists.newArrayList;
 public class JettyPlugin extends AbstractPlugin {
 
     private final Settings settings;
+    private Class<? extends HttpServerTransport> httpServerTransport;
 
     public JettyPlugin(Settings settings) {
         this.settings = settings;
@@ -51,16 +52,34 @@ public class JettyPlugin extends AbstractPlugin {
     @Override
     public Collection<Class<? extends Module>> modules() {
         Collection<Class<? extends Module>> modules = newArrayList();
+
+        // only load plugin modules if http is enabled
         if (settings.getAsBoolean("http.enabled", true)) {
-            Class<? extends HttpServerTransport> defaultHttpServerTransport = NettyHttpServerTransport.class;
-            Class<? extends HttpServerTransport> httpServerTransport = settings.getAsClass("http.type", defaultHttpServerTransport, "org.elasticsearch.http.", "HttpServerTransport");
+
+            // defer to http.type if it exists
+            String httpType = settings.get("http.type");
+            if (httpType != null) {
+                httpServerTransport = settings.getAsClass("http.type", null);
+            } else {
+                // default to JettyHttpServerTransport if no http.type is set
+                httpServerTransport = settings.getAsClass("sonian.elasticsearch.http.type", JettyHttpServerTransport.class);
+            }
+
             if (httpServerTransport == JettyHttpServerTransport.class) {
                 modules.add(JettyHttpServerTransportModule.class);
             } else if (httpServerTransport == FilterHttpServerTransport.class) {
                 modules.add(FilterHttpServerTransportModule.class);
+            } else {
+                // disable plugin
+                httpServerTransport = null;
             }
-
         }
         return modules;
+    }
+
+    public void onModule(HttpServerModule httpServerModule) {
+        // override http server transport binding
+        if (httpServerTransport != null)
+            httpServerModule.setHttpServerTransport(httpServerTransport, name());
     }
 }
