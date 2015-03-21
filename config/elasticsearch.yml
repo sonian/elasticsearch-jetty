@@ -1,9 +1,9 @@
 cluster.name: jetty-test
 # Switch to jetty transport without filter
-#http.type: com.sonian.elasticsearch.http.jetty.JettyHttpServerTransportModule
+#http.type: com.sonian.elasticsearch.http.jetty.JettyHttpServerTransport
 
 # Switch to jetty transport with filter
-http.type: com.sonian.elasticsearch.http.filter.FilterHttpServerTransportModule
+http.type: com.sonian.elasticsearch.http.filter.FilterHttpServerTransport
 
 # Filter setup
 sonian.elasticsearch.http.filter:
