@@ -16,15 +16,21 @@
 package com.sonian.elasticsearch.http.jetty;
 
 import org.elasticsearch.common.inject.AbstractModule;
-import org.elasticsearch.http.HttpServerTransport;
+import org.elasticsearch.common.settings.Settings;
 
 /**
  * @author imotov
  */
 public class JettyHttpServerTransportModule extends AbstractModule {
 
+    private final Settings settings;
+
+    public JettyHttpServerTransportModule(Settings settings) {
+        this.settings = settings;
+    }
+
+    @SuppressWarnings({"unchecked"})
     @Override protected void configure() {
-        bind(HttpServerTransport.class).to(JettyHttpServerTransport.class).asEagerSingleton();
         bind(ESLoggerWrapper.class).asEagerSingleton();
     }
 }

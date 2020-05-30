@@ -6,11 +6,11 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.sonian</groupId>
   <artifactId>elasticsearch-jetty</artifactId>
-  <version>1.2.3-beta</version>
+  <version>1.4.4-beta</version>
   <packaging>jar</packaging>
   <description>Jetty plugin for ElasticSearch</description>
   <inceptionYear>2011</inceptionYear>
-  <url>https://github.com/sonian/elasticsearch-jetty</url>
+  <url>https://github.com/RallySoftware/elasticsearch-jetty</url>
   <licenses>
     <license>
       <name>The Apache Software License, Version 2.0</name>
@@ -19,9 +19,9 @@
     </license>
   </licenses>
   <scm>
-    <connection>scm:git:git@github.com:sonian/elasticsearch-jetty.git</connection>
-    <developerConnection>scm:git:git@github.com:sonian/elasticsearch-jetty.git</developerConnection>
-    <url>http://github.com/sonian/elasticsearch-jetty</url>
+    <connection>scm:git:git@github.com:RallySoftware/elasticsearch-jetty.git</connection>
+    <developerConnection>scm:git:git@github.com:RallySoftware/elasticsearch-jetty.git</developerConnection>
+    <url>http://github.com/RallySoftware/elasticsearch-jetty</url>
   </scm>
   <developers>
     <developer>
@@ -70,7 +70,7 @@
   </parent>
 
   <properties>
-    <elasticsearch.version>1.2.3</elasticsearch.version>
+    <elasticsearch.version>1.4.4</elasticsearch.version>
     <jetty.version>8.1.14.v20131031</jetty.version>
     <github.global.server>github</github.global.server>
   </properties>
@@ -174,6 +174,36 @@
 
   <build>
     <plugins>
+      <plugin>
+        <groupId>de.jutzig</groupId>
+        <artifactId>github-release-plugin</artifactId>
+        <version>1.1.0</version>
+        <executions>
+          <execution>
+            <id>github-upload</id>
+            <phase>deploy</phase>
+            <goals>
+              <goal>release</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <description></description>
+          <releaseName>${project.version}</releaseName>
+          <tag>${project.version}</tag>
+          <artifact>${project.build.directory}/releases/${project.artifactId}-${project.version}.zip</artifact>
+          <serverId>github</serverId>
+          <overwriteArtifact>true</overwriteArtifact>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-deploy-plugin</artifactId>
+        <version>2.8.2</version>
+        <configuration>
+          <skip>true</skip>
+        </configuration>
+      </plugin>
       <plugin>
         <groupId>com.github.github</groupId>
         <artifactId>downloads-maven-plugin</artifactId>

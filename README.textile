@@ -5,6 +5,7 @@ h2. Compatibility
 The following table shows the versions of elasticsearch and jetty that Jetty Plugin was built with.
 
 |_. Jetty Plugin |_.  Elasticsearch    |_.  Jetty  |
+| 1.4.4 | 1.4.4    | 8.1.14.v20131031 |
 | 1.2.1 | 1.2.1    | 8.1.14.v20131031 |
 | 1.1.1-beta | 1.1.1    | 8.1.14.v20131031 |
 | 1.1.0-beta | 1.1.0    | 8.1.14.v20131031 |
@@ -31,13 +32,13 @@ The elasticsearch-jetty plugin can be installed as any other ES plugin using bin
 (specifying the URL is required since github downloads are going away)
 
 <pre>
-$ bin/plugin -url https://oss-es-plugins.s3.amazonaws.com/elasticsearch-jetty/elasticsearch-jetty-1.2.1.zip -install elasticsearch-jetty-1.2.1
+bin/plugin -url https://github.com/RallySoftware/elasticsearch-jetty/releases/download/1.4.4-beta/elasticsearch-jetty-1.4.4-beta.zip -install elasticsearch-jetty-1.4.4-beta
 </pre>
 
 The core of the plugin is JettyHttpServerTransport module that works as a replacement for NettyHttpServerTransport. To enable the elasticsearch-jetty plugin, the default netty http transport should be replaced with jetty http transport by adding the following line to @elasticsearch.yml@.
 
 <pre>
-http.type: com.sonian.elasticsearch.http.jetty.JettyHttpServerTransportModule
+http.type: com.sonian.elasticsearch.http.jetty.JettyHttpServerTransport
 </pre>
 
 The elasticsearch-jetty plugin adds @Server: Jetty(8.1.4.v20120524)@ header to all responses. So, it's possible to verify that jetty plugin is running by checking the response headers using the following curl command:
@@ -109,7 +110,7 @@ After the login service is configured, the next step is to set security constrai
 The following settings in @elasticsearch.yml@ will enable granular restrictions:
 
 <pre>
-http.type: com.sonian.elasticsearch.http.jetty.JettyHttpServerTransportModule
+http.type: com.sonian.elasticsearch.http.jetty.JettyHttpServerTransport
 sonian.elasticsearch.http.jetty:
     config: jetty.xml,jetty-hash-auth.xml,jetty-restrict-writes.xml
 </pre>
@@ -117,7 +118,7 @@ sonian.elasticsearch.http.jetty:
 Authentication can be used with SSL connector. The following settings will restrict access to all pages and enable SSL connector:
 
 <pre>
-http.type: com.sonian.elasticsearch.http.jetty.JettyHttpServerTransportModule
+http.type: com.sonian.elasticsearch.http.jetty.JettyHttpServerTransport
 sonian.elasticsearch.http.jetty:
     config: jetty.xml,jetty-ssl.xml,jetty-hash-auth.xml,jetty-restrict-all.xml
     ssl_port: 9443
@@ -128,15 +129,15 @@ Security constraints in the elasticsearch-jetty plugin is very similar to securi
 
 h3. Request Logging
 
-The elasticsearch-jetty plugin contains two versions of the HTTP Server Transport: @JettyHttpServerTransport@ and @FilterHttpTransportModule@. While @JettyHttpServerTransport@ uses Jetty to handle all incoming requests, @FilterHttpTransportModule@ simply wraps another HTTP Server Transport (@JettyHttpServerTransport@ by default) to filter requests and responses. @FilterHttpTransportModule@ can be configured to pass all incoming requests through a chain of filters. The elasticsearch-jetty plugin contains one such filter that can be used for request logging.
+The elasticsearch-jetty plugin contains two versions of the HTTP Server Transport: @JettyHttpServerTransport@ and @FilterHttpServerTransport@. While @JettyHttpServerTransport@ uses Jetty to handle all incoming requests, @FilterHttpServerTransport@ simply wraps another HTTP Server Transport (@JettyHttpServerTransport@ by default) to filter requests and responses. @FilterHttpServerTransport@ can be configured to pass all incoming requests through a chain of filters. The elasticsearch-jetty plugin contains one such filter that can be used for request logging.
 
-In order to setup request logging, elasticsearch should be switched to use @FilterHttpTransportModule@. It can be done by the following setting:
+In order to setup request logging, elasticsearch should be switched to use @FilterHttpServerTransport@. It can be done by the following setting:
 
 <pre>
-http.type: com.sonian.elasticsearch.http.filter.FilterHttpServerTransportModule
+http.type: com.sonian.elasticsearch.http.filter.FilterHttpServerTransport
 </pre>
 
-Then @FilterHttpTransportModule@ has to be configured with an appropriate filter:
+Then @FilterHttpServerTransport@ has to be configured with an appropriate filter:
 
 <pre>
 sonian.elasticsearch.http.filter:

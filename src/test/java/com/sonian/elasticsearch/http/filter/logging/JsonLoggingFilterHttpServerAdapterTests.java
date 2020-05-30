@@ -16,23 +16,18 @@
 package com.sonian.elasticsearch.http.filter.logging;
 
 import com.sonian.elasticsearch.http.filter.FilterHttpServerTransport;
-import com.sonian.elasticsearch.http.filter.FilterHttpServerTransportModule;
 import com.sonian.elasticsearch.http.jetty.AbstractJettyHttpServerTests;
 import com.sonian.elasticsearch.http.jetty.HttpClientResponse;
 import org.elasticsearch.common.logging.ESLoggerFactory;
 import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.common.xcontent.XContentType;
-import org.elasticsearch.http.HttpServerTransport;
-import org.elasticsearch.node.internal.InternalNode;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.util.Map;
 
-import static com.sonian.elasticsearch.http.filter.logging.RequestLoggingLevel.Level.TRACE;
-import static org.elasticsearch.rest.RestRequest.Method.GET;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
@@ -48,7 +43,7 @@ public class JsonLoggingFilterHttpServerAdapterTests extends AbstractJettyHttpSe
         mockESLoggerFactory = new MockESLoggerFactory("INFO", "com.sonian.elasticsearch.http.filter.jsonlog");
         ESLoggerFactory.setDefaultFactory(mockESLoggerFactory);
         putDefaultSettings(ImmutableSettings.settingsBuilder()
-                .put("http.type", FilterHttpServerTransportModule.class.getName())
+                .put("sonian.elasticsearch.http.type", FilterHttpServerTransport.class.getName())
         );
     }
 
