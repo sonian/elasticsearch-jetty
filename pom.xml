@@ -71,7 +71,7 @@
 
   <properties>
     <elasticsearch.version>1.2.3</elasticsearch.version>
-    <jetty.version>8.1.14.v20131031</jetty.version>
+    <jetty.version>9.4.41.v20210516</jetty.version>
     <github.global.server>github</github.global.server>
   </properties>
 
